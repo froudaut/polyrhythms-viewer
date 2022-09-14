@@ -1,0 +1,614 @@
+<HEAD>
+  <TITLE>Polyrhythms Viewer MJN/MHN (v1.0)</TITLE>
+  <STYLE type="text/css">
+    .table_header
+    {padding-top:1px;
+     padding-right:1px;
+     padding-left:1px;
+     mso-ignore:padding;
+     color:windowtext;
+     font-size:11.0pt;
+     font-weight:700;
+     font-style:normal;
+     text-decoration:none;
+     font-family:Calibri, sans-serif;
+     mso-font-charset:0;
+     mso-number-format:General;
+     text-align:center;
+     vertical-align:middle;
+     border:.5pt solid windowtext;
+     background:#00B0F0;
+     mso-pattern:black none;
+     white-space:nowrap;}
+    
+    .table_content
+    {padding-top:1px;
+     padding-right:1px;
+     padding-left:1px;
+     mso-ignore:padding;
+     color:windowtext;
+     font-size:11.0pt;
+     font-weight:700;
+     font-style:normal;
+     text-decoration:none;
+     font-family:Calibri, sans-serif;
+     mso-font-charset:0;
+     mso-number-format:General;
+     text-align:center;
+     vertical-align:middle;
+     border:.5pt solid windowtext;
+     background:yellow;
+     mso-pattern:black none;
+     white-space:nowrap;}
+  </STYLE>
+
+  <script>
+    var MINHEIGHT = 0;
+    var MAXHEIGHT = 'f';
+    var MINRATIOR = 1;
+    var MINRATIOL = 1;
+    var MAXRATIOR = 5;
+    var MAXRATIOL = 5;
+    var URLHOST = '/data/juggling/tools/polyrhythms/';
+    var NBHANDS = 4;
+    
+  </script>
+
+</HEAD>
+
+
+<BODY>
+
+  <h1>Polyrhythms Viewer MJN/MHN 4 Hands (v1.0)</h1>
+
+  <p>
+
+    <table border='1px solid black;'>
+      <tr>
+	<td>
+	  Nb Objects : <select id="nbobj">
+	    <option value="1">1</option>
+	    <option value="2">2</option>
+	    <option value="3">3</option>
+	    <option value="4" selected>4</option>
+	    <option value="5">5</option>
+	    <option value="6">6</option>
+	  </select>
+	  <br/>
+	  
+	  Min Height : <input type="text" id="minHeight" value="0" size="1" maxlength='1'>
+	  <br/>
+	  Max Height : <input type="text" id="maxHeight" value="9" size="1" maxlength='1'>
+	  <br/>
+	  Exclude Throws : <input type="text" id="exclude" value="2" size="5">
+	  <br/>
+	  Ratio Hand1 :
+	  <select id="ratioH0_1">
+	    <option value="1" selected>1</option>
+	    <option value="2">2</option>
+	    <option value="3">3</option>
+	    <option value="4">4</option>
+	  </select>
+	  :
+	  <select id="ratioH1">
+	    <option value="1">1</option>
+	    <option value="2" selected>2</option>
+	    <option value="3">3</option>
+	    <option value="4">4</option>
+	  </select>
+	  <br/>
+	  Ratio Hand2 :
+	  <select id="ratioH0_2">
+	    <option value="1" selected>1</option>
+	    <option value="2">2</option>
+	    <option value="3">3</option>
+	    <option value="4">4</option>
+	  </select>
+	  :
+	  <select id="ratioH2">
+	    <option value="1" selected>1</option>
+	    <option value="2">2</option>
+	    <option value="3">3</option>
+	    <option value="4">4</option>
+	  </select>
+	  <br/>
+	  Ratio Hand3 :
+	  <select id="ratioH0_3">
+	    <option value="1" selected>1</option>
+	    <option value="2">2</option>
+	    <option value="3">3</option>
+	    <option value="4">4</option>
+	  </select>
+	  :
+	  <select id="ratioH3">
+	    <option value="1">1</option>
+	    <option value="2">2</option>
+	    <option value="3" selected>3</option>
+	    <option value="4">4</option>
+	  </select>
+	  <br/>
+	</td>
+      </tr>
+    </table>
+    <button onclick="run()">Check</button>
+    <br/><br/>
+  </p>
+  
+  <h3>Polyrhythms:</h3>
+
+  <span id="insertHere"></span>
+
+  <h3>MJN TXT Files:</h3>
+  <span id="TXT1"></span>    
+  <span id="TXT2"></span>
+  <span id="TXT3"></span>
+
+  <h3>JML Files:</h3>
+  <span id="JML1"></span>
+  <span id="JML2"></span>
+  <span id="JML3"></span>
+
+  <p>&nbsp;</p><p>Nb: <ul>
+      <li>Ratios are related to Hand0. </li>
+      <li>Throws are only simplex here. </li>
+      <li>Height are in Hexadecimal and Max Height is f.</li>
+      <li>Throws to exclude are separated by "<em>;</em>". </li>
+    </ul>
+  </p>
+  
+  <p>&nbsp;</p><p>-- Creation : JugglingTB, Module MHN v0.3 (Frederic Roudaut) --</p><p>&nbsp;</p>    
+
+  
+  <script>
+
+    function readAndParseDBfile(file)
+    {
+	var xhr, i, text, lines;
+	if(window.XMLHttpRequest){
+	    // IE7+, Firefox, Chrome, Opera, Safari
+	    xhr = new XMLHttpRequest();
+	}else{
+	    // IE5, IE6  - next line supports these dinosaurs
+	    xhr = new ActiveXObject("Microsoft.XMLHTTP");
+	}
+	xhr.onreadystatechange = function(){
+	    if(xhr.readyState == 4 && xhr.status == 200){
+
+		var maxHeight = document.getElementById("maxHeight").value;
+		var minHeight = document.getElementById("minHeight").value;
+		var ratioH0_1 = document.getElementById("ratioH0_1").value;
+		var ratioH0_2 = document.getElementById("ratioH0_2").value;
+		var ratioH0_3 = document.getElementById("ratioH0_3").value;
+		var ratioH1 = document.getElementById("ratioH1").value;
+		var ratioH2 = document.getElementById("ratioH2").value;
+		var ratioH3 = document.getElementById("ratioH3").value;
+		var nbobj = document.getElementById("nbobj").value;
+		var exclude = document.getElementById("exclude").value.toUpperCase().split(";");
+		document.getElementById('insertHere').innerHTML = '';
+		var matrix = [];
+		for (let i=0; i < NBHANDS; i ++){
+		    matrix[i] = [];
+		}
+		var ssModel = '';
+		var cpt = 0;
+
+		var output = '<table border="0" id="polyrhythms">\n<tr><td COLSPAN=1></td><td class=table_header>MJNs</td><td class=table_header>MJN Same Tempo/Extra Holding Time</td><td class=table_header>MJN Same Tempo/Split Extra Holding Time for JL</td><td class=table_header>MHNs</td><td class=table_header>MHN Same Tempo/Extra Holding Time</td><td class=table_header>MHN Same Tempo/Split Extra Holding Time</td>\n</tr>\n';
+		var ssFileData = '-- Polyrhythms MJNs --\n\n========================================\n'+nbobj+' objects - '+ratioH0_1+':'+ratioH1+'/'+ratioH0_2+':'+ratioH2+'/'+ratioH0_3+':'+ratioH3+'\nMax Height: '+maxHeight+'\nExclude Throws: '+document.getElementById("exclude").value+'\n========================================\n\n';
+		var ssFileDataLowHeight = '-- Polyrhythms MJNs Low Heights --\n\n ========================================\n'+nbobj+' objects - '+ratioH0_1+':'+ratioH1+'/'+ratioH0_2+':'+ratioH2+'/'+ratioH0_3+':'+ratioH3+'\nMin Height: '+minHeight+'\nMax Height: '+maxHeight+'\nExclude Throws: '+document.getElementById("exclude").value+'\n========================================\n\n';
+		var ssFileDataLowHeightJL = '-- Polyrhythms MJNs Low Heights for JugglingLab --\n\n========================================\n'+nbobj+' objects - '+ratioH0_1+':'+ratioH1+'/'+ratioH0_2+':'+ratioH2+'/'+ratioH0_3+':'+ratioH3+'\nMin Height: '+minHeight+'\nMax Height: '+maxHeight+'\nExclude Throws: '+document.getElementById("exclude").value+'\n========================================\n\n';	   
+		var JMLFileData = '<?xml version="1.0"?>\n<!DOCTYPE jml SYSTEM "file://jml.dtd">\n<jml version="1.2">\n<patternlist>\n<title>'+'Polyrhythms MJNs</title>\n<line display="========================================"/>\n<line display="'+nbobj+' objects - '+ratioH0_1+':'+ratioH1+'/'+ratioH0_2+':'+ratioH2+'/'+ratioH0_3+':'+ratioH3+'"/>\n<line display="Min Height: '+minHeight+'"/>\n<line display="Max Height: '+maxHeight+'"/>\n<line display="Exclude Throws: '+document.getElementById("exclude").value+'"/>\n<line display="========================================"/>\n';
+		var JMLFileDataLowHeight = '<?xml version="1.0"?>\n<!DOCTYPE jml SYSTEM "file://jml.dtd">\n<jml version="1.2">\n<patternlist>\n<title>'+'Polyrhythms MJNs Low Heights</title>\n<line display="========================================"/>\n<line display="'+nbobj+' objects - '+ratioH0_1+':'+ratioH1+'/'+ratioH0_2+':'+ratioH2+'/'+ratioH0_3+':'+ratioH3+'"/>\n<line display="Min Height: '+minHeight+'"/>\n<line display="Max Height: '+maxHeight+'"/>\n<line display="Exclude Throws: '+document.getElementById("exclude").value+'"/>\n<line display="========================================"/>\n';
+		var JMLFileDataLowHeightJL = '<?xml version="1.0"?>\n<!DOCTYPE jml SYSTEM "file://jml.dtd">\n<jml version="1.2">\n<patternlist>\n<title>'+'Polyrhythms MJNs Low Heights for JugglingLab</title>\n<line display="========================================"/>\n<line display="'+nbobj+' objects - '+ratioH0_1+':'+ratioH1+'/'+ratioH0_2+':'+ratioH2+'/'+ratioH0_3+':'+ratioH3+'"/>\n<line display="Min Height: '+minHeight+'"/>\n<line display="Max Height: '+maxHeight+'"/>\n<line display="Exclude Throws: '+document.getElementById("exclude").value+'"/>\n<line display="========================================"/>\n';
+		
+		// Compute SS Model
+		// Get a Commun ratioL
+		var ratioL = 1;
+		if ( ratioH0_1 % ratioL == 0)
+		{
+		    ratioL = ratioH0_1;
+		}
+		else
+		{
+		    ratioL = ratioH0_1 * ratioL;
+		}
+		
+		if ( ratioH0_2 % ratioL == 0)
+		{
+		    ratioL = ratioH0_2;
+		}
+		else
+		{
+		    ratioL = ratioH0_2 * ratioL;
+		}
+
+		if ( ratioH0_3 % ratioL == 0)
+		{
+		    ratioL = ratioH0_3;
+		}
+		else
+		{
+		    ratioL = ratioH0_3 * ratioL;
+		}
+
+		// Update all Ratios with the commun ratioL
+		ratioH1 = ratioL/ratioH0_1 * ratioH1;
+		ratioH2 = ratioL/ratioH0_2 * ratioH2;
+		ratioH3 = ratioL/ratioH0_3 * ratioH3;
+		ratioH0_1 = ratioL;
+		ratioH0_2 = ratioL;
+		ratioH0_3 = ratioL;
+
+		// Get a Commun GCF
+		let GCF = 1;
+		if (( ratioH0_1 * ratioH1 ) % GCF == 0)
+		{
+		    GCF = ratioH0_1 * ratioH1;
+		}
+		else
+		{
+		    GCF = ratioH0_1 * ratioH1 * GCF;
+		}
+
+		if (( ratioH0_2 * ratioH2 ) % GCF == 0)
+		{
+		    GCF = ratioH0_2 * ratioH2;
+		}
+		else
+		{
+		    GCF = ratioH0_2 * ratioH2 * GCF;
+		}
+
+		if (( ratioH0_3 * ratioH3 ) % GCF == 0)
+		{
+		    GCF = ratioH0_3 * ratioH3;
+		}
+		else
+		{
+		    GCF = ratioH0_3 * ratioH3 * GCF;
+		}
+
+		// Update all Ratios with the GCF to get the divisions map
+		let div_map = [];
+		let div_map_hand0 = GCF / ratioH0_1;
+		div_map.push(GCF/ratioH1);
+		div_map.push(GCF/ratioH2);
+		div_map.push(GCF/ratioH3);
+			
+		// Compute Model
+		for (let i=0; i < GCF; i += div_map_hand0){
+		    matrix[0][i] = '-';
+		}		
+		
+		for (let i=1; i < NBHANDS; i ++){
+		    let nb = div_map[i-1];
+		    for (let j=0; j < GCF; j +=nb){
+			matrix[i][j] = '-';				
+		    }
+		}
+
+		for (let i=0; i < NBHANDS; i ++){
+		    ssModel=ssModel+'(';
+		    for (let j=0; j < GCF; j ++){
+			if(matrix[i][j] != '-')
+			{
+			    ssModel=ssModel+'0';
+			}
+			else
+			{
+			    ssModel=ssModel+matrix[i][j];
+			}
+			if(j+1<GCF)
+			    ssModel=ssModel+',';
+		    }
+		    ssModel=ssModel+')';
+		}			
+		console.log('MHN Model : '+ssModel);
+
+		
+		text = xhr.responseText;
+		lines = text.split("\n");
+		
+		for(let i = 0; i < lines.length; i++){ 
+		    //console.log(lines[i]);
+		    lines[i] = lines[i].replace(/\s+/g, '');
+		    if(lines[i] == ''){
+			continue;
+		    }
+		    let ss=lines[i].split(';')[0];	
+		    let ssthrow = [];
+		    let num_hand = 0;
+		    let num_beat = 0;		    
+			    
+		    for(let j = 0; j < ss.length; j++){
+			if(ss[j] == '(')
+			{
+			    num_beat = 0;
+			}
+			else if (ss[j] == ',')  {			    
+			    num_beat ++;
+			}
+			else if (ss[j] == ')')
+			{
+			    num_hand ++;
+			}
+			else if(ss[j] == ':') {
+			    if(matrix[num_hand][num_beat] == '-')
+			    {
+				ssthrow.push(ss[j]);
+			    }
+			    j++;
+			}
+			else
+			{			   
+			    if(matrix[num_hand][num_beat] == '-')
+			    {
+				ssthrow.push(ss[j]);
+			    }
+			}
+		    }
+		    
+		    let valid = true;
+		    for(let j = 0; j < ssthrow.length; j++){
+			if(parseInt(ssthrow[j],16) < parseInt(minHeight,16) || parseInt(ssthrow[j],16) > parseInt(maxHeight,16)){
+				valid = false;
+				break;
+			    }
+			    if(exclude.includes(ssthrow[j].toUpperCase())){
+				valid = false;
+				break;
+			    }			    
+		    }		
+		
+		    if(valid == false) {
+			//console.log(ss);
+			continue;
+		    }
+
+		    cpt++;
+		    let val1 = lines[i].split(';')[1].replace(/</g, '&lt;');
+		    val1 = val1.replace(/>/g, '&gt;');
+		    let val2 = lines[i].split(';')[3].replace(/</g, '&lt;');
+		    val2 = val2.replace(/>/g, '&gt;');
+		    let val3 = lines[i].split(';')[5].replace(/</g, '&lt;');
+		    val3 = val3.replace(/>/g, '&gt;');
+		    output = output + '\n<tr><td class=table_header>'+cpt+'</td><td class=table_content>'+val1+'</td><td class=table_content>'+val2+'</td><td class=table_content>'+val3+'</td><td class=table_content>'+lines[i].split(';')[0]+'</td><td class=table_content>'+lines[i].split(';')[2]+'</td><td class=table_content>'+lines[i].split(';')[4]+'</td></tr>';		
+		    ssFileData = ssFileData + lines[i].split(';')[1] + '\n';
+		    ssFileDataLowHeight = ssFileDataLowHeight + lines[i].split(';')[3] + '\n';
+		    ssFileDataLowHeightJL = ssFileDataLowHeightJL + lines[i].split(';')[5] + '\n';
+		   		 
+		    JMLFileData = JMLFileData + '<line display=\''+val1+'\' notation="siteswap">\npattern='+val1+';colors={red}{green}{blue}{yellow}{magenta}{gray}{pink}{black}{cyan}{orange}\n</line>\n';		
+		    JMLFileDataLowHeight = JMLFileDataLowHeight + '<line display=\''+val2+'\' notation="siteswap">\npattern='+val2+';colors={red}{green}{blue}{yellow}{magenta}{gray}{pink}{black}{cyan}{orange}\n</line>\n';
+		    JMLFileDataLowHeightJL = JMLFileDataLowHeightJL + '<line display=\''+val3+'\' notation="siteswap">\npattern='+val3+';colors={red}{green}{blue}{yellow}{magenta}{gray}{pink}{black}{cyan}{orange}\n</line>\n';
+
+		}
+		
+		output = output + '\n\n</table>\n';
+		ssFileData = ssFileData + '\n   [ => '+cpt+' MJN(s) ]\n\n----------- Creation : JugglingTB (Module MHN v0.3)';
+		ssFileDataLowHeight = ssFileDataLowHeight + '\n   [ => '+cpt+' MJN(s) ]\n\n----------- Creation : JugglingTB (Module MHN v0.3)';
+		ssFileDataLowHeightJL = ssFileDataLowHeightJL + '\n   [ => '+cpt+' MJN(s) ]\n\n----------- Creation : JugglingTB (Module MHN v0.3)';
+		JMLFileData = JMLFileData + '<line display="" />\n<line display="   [ => '+cpt+' MJN(s) ]"/>\n<line display="" />\n<line display="----------- Creation : JugglingTB (Module MHN v0.3)" />\n</patternlist>\n</jml>';
+		JMLFileDataLowHeight = JMLFileDataLowHeight + '<line display="" />\n<line display="   [ => '+cpt+' MJN(s) ]"/>\n<line display="" />\n<line display="----------- Creation : JugglingTB (Module MHN v0.3)" />\n</patternlist>\n</jml>';
+		JMLFileDataLowHeightJL = JMLFileDataLowHeightJL + '<line display="" />\n<line display="   [ => '+cpt+' MJN(s) ]"/>\n<line display="" />\n<line display="----------- Creation : JugglingTB (Module MHN v0.3)" />\n</patternlist>\n</jml>';
+
+		document.getElementById('insertHere').innerHTML = output;
+		
+		var ssFilename = 'polyrhythms-MJN-4hands-'+nbobj+'objects_'+ratioH0_1+'!'+ratioH1+'_'+ratioH0_2+'!'+ratioH2+'_'+ratioH0_3+'!'+ratioH3+'.txt';		
+		var oldElem = document.getElementById('TXT1File');
+		if(oldElem != null)
+		{
+		    document.body.removeChild(oldElem);
+		    URL.revokeObjectURL(oldElem.href);
+		}
+		oldElem = document.getElementById('TXT1FileBR');
+		if(oldElem != null)
+		{
+		    document.body.removeChild(oldElem);
+		    URL.revokeObjectURL(oldElem.href);
+		}
+		var exportSSFile = new Blob([ssFileData]);
+		var elem = window.document.createElement('a');
+		elem.id = 'TXT1File';
+		var newContent = document.createTextNode('Polyrhythms');
+		elem.appendChild(newContent);
+		elem.href = window.URL.createObjectURL(exportSSFile);
+		elem.download = ssFilename;
+		var currentNode = document.getElementById('TXT1');	  
+		document.body.insertBefore(elem, currentNode);
+		elem = window.document.createElement('br');
+		elem.id = 'TXT1FileBR';
+		document.body.insertBefore(elem, currentNode);
+
+		var ssFilenameLowHeight = 'polyrhythms-MJN-4hands-'+nbobj+'objects_'+ratioH0_1+'!'+ratioH1+'_'+ratioH0_2+'!'+ratioH2+'_'+ratioH0_3+'!'+ratioH3+'-LowHeight.txt';
+		oldElem = document.getElementById('TXT2File');
+		if(oldElem != null)
+		{
+		    document.body.removeChild(oldElem);
+		    URL.revokeObjectURL(oldElem.href);
+		}
+		oldElem = document.getElementById('TXT2FileBR');
+		if(oldElem != null)
+		{
+		    document.body.removeChild(oldElem);
+		    URL.revokeObjectURL(oldElem.href);
+		}
+		var exportSSFileLowHeight = new Blob([ssFileDataLowHeight]);
+		elem = window.document.createElement('a');
+		elem.id = 'TXT2File';
+		newContent = document.createTextNode('Polyrhythms Low Heights');
+		elem.appendChild(newContent);
+		elem.href = window.URL.createObjectURL(exportSSFileLowHeight);
+		elem.download = ssFilenameLowHeight;
+		currentNode = document.getElementById('TXT2');	  
+		document.body.insertBefore(elem, currentNode);
+		elem = window.document.createElement('br');
+		elem.id = 'TXT2FileBR';
+		document.body.insertBefore(elem, currentNode);
+
+		var ssFilenameLowHeightJL = 'polyrhythms-MJN-4hands-'+nbobj+'objects_'+ratioH0_1+'!'+ratioH1+'_'+ratioH0_2+'!'+ratioH2+'_'+ratioH0_3+'!'+ratioH3+'-LowHeightJL.txt';
+		oldElem = document.getElementById('TXT3File');
+		if(oldElem != null)
+		{
+		    document.body.removeChild(oldElem);
+		    URL.revokeObjectURL(oldElem.href);
+		}
+		oldElem = document.getElementById('TXT3FileBR');
+		if(oldElem != null)
+		{
+		    document.body.removeChild(oldElem);
+		    URL.revokeObjectURL(oldElem.href);
+		}
+		var exportSSFileLowHeightJL = new Blob([ssFileDataLowHeightJL]);
+		elem = window.document.createElement('a');
+		elem.id = 'TXT3File';
+		newContent = document.createTextNode('Polyrhythms Low Heights For JL');
+		elem.appendChild(newContent);
+		elem.href = window.URL.createObjectURL(exportSSFileLowHeightJL);
+		elem.download = ssFilenameLowHeightJL;
+		currentNode = document.getElementById('TXT3');	  
+		document.body.insertBefore(elem, currentNode);
+		elem = window.document.createElement('br');
+		elem.id = 'TXT3FileBR';
+		document.body.insertBefore(elem, currentNode);
+
+		var JMLFilename = 'polyrhythms-MJN-4hands-'+nbobj+'objects_'+ratioH0_1+'!'+ratioH1+'_'+ratioH0_2+'!'+ratioH2+'_'+ratioH0_3+'!'+ratioH3+'.jml';
+		oldElem = document.getElementById('JML1File');
+		if(oldElem != null)
+		{
+		    document.body.removeChild(oldElem);
+		    URL.revokeObjectURL(oldElem.href);
+		}
+		oldElem = document.getElementById('JML1FileBR');
+		if(oldElem != null)
+		{
+		    document.body.removeChild(oldElem);
+		    URL.revokeObjectURL(oldElem.href);
+		}
+		var exportJMLFile = new Blob([JMLFileData]);
+		elem = window.document.createElement('a');
+		elem.id = 'JML1File';
+		newContent = document.createTextNode('Polyrhythms');
+		elem.appendChild(newContent);
+		elem.href = window.URL.createObjectURL(exportJMLFile);
+		elem.download = JMLFilename;
+		currentNode = document.getElementById('JML1');	  
+		document.body.insertBefore(elem, currentNode);
+		elem = window.document.createElement('br');
+		elem.id = 'JML1FileBR';
+		document.body.insertBefore(elem, currentNode);
+
+		var JMLFilenameLowHeight = 'polyrhythms-MJN-4hands-'+nbobj+'objects_'+ratioH0_1+'!'+ratioH1+'_'+ratioH0_2+'!'+ratioH2+'_'+ratioH0_3+'!'+ratioH3+'-LowHeight.jml';
+		oldElem = document.getElementById('JML2File');
+		if(oldElem != null)
+		{
+		    document.body.removeChild(oldElem);
+		    URL.revokeObjectURL(oldElem.href);
+		}
+		oldElem = document.getElementById('JML2FileBR');
+		if(oldElem != null)
+		{
+		    document.body.removeChild(oldElem);
+		    URL.revokeObjectURL(oldElem.href);
+		}
+		var exportJMLFileLowHeight = new Blob([JMLFileDataLowHeight]);
+		elem = window.document.createElement('a');
+		elem.id = 'JML2File';
+		newContent = document.createTextNode('Polyrhythms Low Heights');
+		elem.appendChild(newContent);
+		elem.href = window.URL.createObjectURL(exportJMLFileLowHeight);
+		elem.download = JMLFilenameLowHeight;
+		currentNode = document.getElementById('JML2');	  
+		document.body.insertBefore(elem, currentNode);
+		elem = window.document.createElement('br');
+		elem.id = 'JML2FileBR';
+		document.body.insertBefore(elem, currentNode);
+
+		var JMLFilenameLowHeightJL = 'polyrhythms-MJN-4hands-'+nbobj+'objects_'+ratioH0_1+'!'+ratioH1+'_'+ratioH0_2+'!'+ratioH2+'_'+ratioH0_3+'!'+ratioH3+'-LowHeightJL.jml';
+		oldElem = document.getElementById('JML3File');
+		if(oldElem != null)
+		{
+		    document.body.removeChild(oldElem);
+		    URL.revokeObjectURL(oldElem.href);
+		}
+		oldElem = document.getElementById('JML3FileBR');
+		if(oldElem != null)
+		{
+		    document.body.removeChild(oldElem);
+		    URL.revokeObjectURL(oldElem.href);
+		}
+		var exportJMLFileLowHeightJL = new Blob([JMLFileDataLowHeightJL]);
+		elem = window.document.createElement('a');
+		elem.id = 'JML3File';
+		newContent = document.createTextNode('Polyrhythms Low Heights For JL');
+		elem.appendChild(newContent);
+		elem.href = window.URL.createObjectURL(exportJMLFileLowHeightJL);
+		elem.download = JMLFilenameLowHeightJL;
+		currentNode = document.getElementById('JML3');	  
+		document.body.insertBefore(elem, currentNode);
+		elem = window.document.createElement('br');
+		elem.id = 'JML3FileBR';
+		document.body.insertBefore(elem, currentNode);
+		
+	    }
+
+	    else if(xhr.status == 404)
+	    {
+		var output = '\n\n<p><span style="color:red">Corresponding Entry is not available in DB</span></p>';
+		document.getElementById('insertHere').innerHTML = output;
+	    }
+	    
+	    else 
+	    {
+		document.getElementById('insertHere').innerHTML = '';
+	    }
+	}
+
+
+	xhr.open('GET', URLHOST+file, true);
+	xhr.send();
+    }
+
+
+
+    function run() {
+
+	var maxHeight = document.getElementById("maxHeight").value;
+	var minHeight = document.getElementById("minHeight").value;
+	var ratioH0_1 = document.getElementById("ratioH0_1").value;
+	var ratioH0_2 = document.getElementById("ratioH0_2").value;
+	var ratioH0_3 = document.getElementById("ratioH0_3").value;
+	var ratioH1 = document.getElementById("ratioH1").value;
+	var ratioH2 = document.getElementById("ratioH2").value;
+	var ratioH3 = document.getElementById("ratioH3").value;
+	var nbobj = document.getElementById("nbobj").value;
+
+	// Check Parameters
+	if(parseInt(maxHeight,16) > MAXHEIGHT){
+	    var output = '\n\n<p><span style="color:red">Max Height is invalid (\<'+MAXHEIGHT+') </span></p>';
+	    document.getElementById('insertHere').innerHTML = output;
+	    return;
+	}
+	if(parseInt(minHeight,16) < MINHEIGHT){
+	    var output = '\n\n<p><span style="color:red">Min Height is invalid (\<'+MINHEIGHT+') </span></p>';
+	    document.getElementById('insertHere').innerHTML = output;
+	    return;
+	}
+//	if(ratioR < MINRATIOR || ratioR > MAXRATIOR){
+//	    var output = '\n\n<p><span style="color:red">Ratio Right is invalid is DB ['+MINRATIOR+'..'+MAXRATIOR+'] </span></p>';
+//	    document.getElementById('insertHere').innerHTML = output;
+//	    return;
+//	}
+//	if(ratioL < MINRATIOL || ratioL > MAXRATIOL){
+//	    var output = '\n\n<p><span style="color:red">Ratio Left is invalid in DB ['+MINRATIOL+'..'+MAXRATIOL+'] </span></p>';
+//	    document.getElementById('insertHere').innerHTML = output;
+//	    return;
+//	}
+
+	var fileIn = 'polyrhythms-MHN-4hands-'+nbobj+'objects_'+ratioH0_1+'!'+ratioH1+'_'+ratioH0_2+'!'+ratioH2+'_'+ratioH0_3+'!'+ratioH3+'.txt';
+	readAndParseDBfile('db_MHN/'+fileIn);	
+    }
+
+
+
+    </script>
+  
+</BODY>
