@@ -3,7 +3,7 @@
 
   <meta content="text/html;charset=utf-8" http-equiv="Content-Type"/>
   <meta content="utf-8" http-equiv="encoding"/>
-   
+
   <STYLE type="text/css">
     .table_header
     {padding-top:1px;
@@ -53,9 +53,8 @@
     var MINRATIOL = 1;
     var MAXRATIOR = 5;
     var MAXRATIOL = 5;
-    var URLHOST = '/data/juggling/tools/polyrhythms/';
-    var NBHANDS = 4;
-    
+    var URLHOST = '/data/juggling/tools/polyrhythms/';   
+    var NBHANDS = 4;    
   </script>
 
 </HEAD>
@@ -153,8 +152,9 @@
   <span id="JML3"></span>
 
   <p>&nbsp;</p><p>Nb: <ul>
+      <li>If you are looking for Classical Notation with 2 Hands go <a href="polyrhythms-viewer.html" target="_blank">Here</a>.</li>
       <li>Ratios are related to Hand0. </li>
-      <li>Throws are only simplex here. </li>
+      <li>Throws are only simplexes here. </li>
       <li>Height are in Hexadecimal and Max Height is f.</li>
       <li>Throws to exclude are separated by "<em>;</em>". </li>
     </ul>
@@ -375,7 +375,7 @@
 		    val2 = val2.replace(/>/g, '&gt;');
 		    let val3 = lines[i].split(';')[5].replace(/</g, '&lt;');
 		    val3 = val3.replace(/>/g, '&gt;');
-		    output = output + '\n<tr><td class=table_header>'+cpt+'</td><td class=table_content>'+val1+'</td><td class=table_content>'+val2+'</td><td class=table_content>'+val3+'</td><td class=table_content>'+lines[i].split(';')[0]+'</td><td class=table_content>'+lines[i].split(';')[2]+'</td><td class=table_content>'+lines[i].split(';')[4]+'</td></tr>';		
+		    output = output + '\n<tr><td class=table_header>'+cpt+'</td><td class=table_content><a href=\'https://jugglinglab.org/anim?pattern='+val1+';colors=mixed\' target="_blank">'+val1+'</td><td class=table_content><a href=\'https://jugglinglab.org/anim?pattern='+val2+';colors=mixed\' target="_blank">'+val2+'</td><td class=table_content><a href=\'https://jugglinglab.org/anim?pattern='+val3+';colors=mixed\' target="_blank">'+val3+'</td><td class=table_content>'+lines[i].split(';')[0]+'</td><td class=table_content>'+lines[i].split(';')[2]+'</td><td class=table_content>'+lines[i].split(';')[4]+'</td></tr>';		
 		    ssFileData = ssFileData + lines[i].split(';')[1] + '\n';
 		    ssFileDataLowHeight = ssFileDataLowHeight + lines[i].split(';')[3] + '\n';
 		    ssFileDataLowHeightJL = ssFileDataLowHeightJL + lines[i].split(';')[5] + '\n';
