@@ -1,5 +1,5 @@
 <HEAD>
-  <TITLE>Polyrhythms Viewer MJN/MHN (v1.0)</TITLE>
+  <TITLE>Polyrhythms Viewer MJN/MHN (v1.1)</TITLE>
 
   <meta content="text/html;charset=utf-8" http-equiv="Content-Type"/>
   <meta content="utf-8" http-equiv="encoding"/>
@@ -53,16 +53,18 @@
     var MINRATIOL = 1;
     var MAXRATIOR = 5;
     var MAXRATIOL = 5;
-    var URLHOST = '/data/juggling/tools/polyrhythms/';   
+    var URLHOST = './';   
     var NBHANDS = 4;    
   </script>
 
+  <script src="lib/jszip/dist/jszip.js"></script>
+  
 </HEAD>
 
 
 <BODY>
 
-  <h1>Polyrhythms Viewer MJN/MHN 4 Hands (v1.0)</h1>
+  <h1>Polyrhythms Viewer MJN/MHN 4 Hands (v1.1)</h1>
 
   <p>
 
@@ -155,7 +157,7 @@
       <li>If you are looking for Classical Notation with 2 Hands go <a href="polyrhythms-viewer.html" target="_blank">Here</a>.</li>
       <li>Ratios are related to Hand0. </li>
       <li>Throws are only simplexes here. </li>
-      <li>Height are in Hexadecimal and Max Height is f.</li>
+      <li>Heights are in Hexadecimal and Max Height is f.</li>
       <li>Throws to exclude are separated by "<em>;</em>". </li>
     </ul>
   </p>
@@ -171,9 +173,11 @@
 	if(window.XMLHttpRequest){
 	    // IE7+, Firefox, Chrome, Opera, Safari
 	    xhr = new XMLHttpRequest();
+	    xhr.responseType = "arraybuffer";
 	}else{
 	    // IE5, IE6  - next line supports these dinosaurs
 	    xhr = new ActiveXObject("Microsoft.XMLHTTP");
+	    xhr.responseType = "arraybuffer";
 	}
 	xhr.onreadystatechange = function(){
 	    if(xhr.readyState == 4 && xhr.status == 200){
@@ -198,7 +202,7 @@
 
 		var output = '<table border="0" id="polyrhythms">\n<tr><td COLSPAN=1></td><td class=table_header>MJNs</td><td class=table_header>MJN Same Tempo/Extra Holding Time</td><td class=table_header>MJN Same Tempo/Split Extra Holding Time for JL</td><td class=table_header>MHNs</td><td class=table_header>MHN Same Tempo/Extra Holding Time</td><td class=table_header>MHN Same Tempo/Split Extra Holding Time</td>\n</tr>\n';
 		var ssFileData = '-- Polyrhythms MJNs --\n\n========================================\n'+nbobj+' objects - '+ratioH0_1+':'+ratioH1+'/'+ratioH0_2+':'+ratioH2+'/'+ratioH0_3+':'+ratioH3+'\nMax Height: '+maxHeight+'\nExclude Throws: '+document.getElementById("exclude").value+'\n========================================\n\n';
-		var ssFileDataLowHeight = '-- Polyrhythms MJNs Low Heights --\n\n ========================================\n'+nbobj+' objects - '+ratioH0_1+':'+ratioH1+'/'+ratioH0_2+':'+ratioH2+'/'+ratioH0_3+':'+ratioH3+'\nMin Height: '+minHeight+'\nMax Height: '+maxHeight+'\nExclude Throws: '+document.getElementById("exclude").value+'\n========================================\n\n';
+		var ssFileDataLowHeight = '-- Polyrhythms MJNs Low Heights --\n\n========================================\n'+nbobj+' objects - '+ratioH0_1+':'+ratioH1+'/'+ratioH0_2+':'+ratioH2+'/'+ratioH0_3+':'+ratioH3+'\nMin Height: '+minHeight+'\nMax Height: '+maxHeight+'\nExclude Throws: '+document.getElementById("exclude").value+'\n========================================\n\n';
 		var ssFileDataLowHeightJL = '-- Polyrhythms MJNs Low Heights for JugglingLab --\n\n========================================\n'+nbobj+' objects - '+ratioH0_1+':'+ratioH1+'/'+ratioH0_2+':'+ratioH2+'/'+ratioH0_3+':'+ratioH3+'\nMin Height: '+minHeight+'\nMax Height: '+maxHeight+'\nExclude Throws: '+document.getElementById("exclude").value+'\n========================================\n\n';	   
 		var JMLFileData = '<?xml version="1.0"?>\n<!DOCTYPE jml SYSTEM "file://jml.dtd">\n<jml version="1.2">\n<patternlist>\n<title>'+'Polyrhythms MJNs</title>\n<line display="========================================"/>\n<line display="'+nbobj+' objects - '+ratioH0_1+':'+ratioH1+'/'+ratioH0_2+':'+ratioH2+'/'+ratioH0_3+':'+ratioH3+'"/>\n<line display="Min Height: '+minHeight+'"/>\n<line display="Max Height: '+maxHeight+'"/>\n<line display="Exclude Throws: '+document.getElementById("exclude").value+'"/>\n<line display="========================================"/>\n';
 		var JMLFileDataLowHeight = '<?xml version="1.0"?>\n<!DOCTYPE jml SYSTEM "file://jml.dtd">\n<jml version="1.2">\n<patternlist>\n<title>'+'Polyrhythms MJNs Low Heights</title>\n<line display="========================================"/>\n<line display="'+nbobj+' objects - '+ratioH0_1+':'+ratioH1+'/'+ratioH0_2+':'+ratioH2+'/'+ratioH0_3+':'+ratioH3+'"/>\n<line display="Min Height: '+minHeight+'"/>\n<line display="Max Height: '+maxHeight+'"/>\n<line display="Exclude Throws: '+document.getElementById("exclude").value+'"/>\n<line display="========================================"/>\n';
@@ -277,7 +281,7 @@
 		div_map.push(GCF/ratioH1);
 		div_map.push(GCF/ratioH2);
 		div_map.push(GCF/ratioH3);
-			
+		
 		// Compute Model
 		for (let i=0; i < GCF; i += div_map_hand0){
 		    matrix[0][i] = '-';
@@ -307,53 +311,57 @@
 		    ssModel=ssModel+')';
 		}			
 		console.log('MHN Model : '+ssModel);
-
+		//text = xhr.responseText;
+		//lines = text.split("\n");
 		
-		text = xhr.responseText;
-		lines = text.split("\n");
-		
-		for(let i = 0; i < lines.length; i++){ 
-		    //console.log(lines[i]);
-		    lines[i] = lines[i].replace(/\s+/g, '');
-		    if(lines[i] == ''){
-			continue;
-		    }
-		    let ss=lines[i].split(';')[0];	
-		    let ssthrow = [];
-		    let num_hand = 0;
-		    let num_beat = 0;		    
-			    
-		    for(let j = 0; j < ss.length; j++){
-			if(ss[j] == '(')
-			{
-			    num_beat = 0;
+		JSZip.loadAsync(xhr.response).then(function (zip) {
+		    //console.log(zip.files);		 
+		    return zip.file(file+".txt").async("string");
+		}).then(function (text) {		
+		    lines = text.split("\n");
+		    		    
+		    for(let i = 0; i < lines.length; i++){ 
+			//console.log(lines[i]);
+			lines[i] = lines[i].replace(/\s+/g, '');
+			if(lines[i] == ''){
+			    continue;
 			}
-			else if (ss[j] == ',')  {			    
-			    num_beat ++;
-			}
-			else if (ss[j] == ')')
-			{
-			    num_hand ++;
-			}
-			else if(ss[j] == ':') {
-			    if(matrix[num_hand][num_beat] == '-')
+			let ss=lines[i].split(';')[0];	
+			let ssthrow = [];
+			let num_hand = 0;
+			let num_beat = 0;		    
+			
+			for(let j = 0; j < ss.length; j++){
+			    if(ss[j] == '(')
 			    {
-				ssthrow.push(ss[j]);
+				num_beat = 0;
 			    }
-			    j++;
-			}
-			else
-			{			   
-			    if(matrix[num_hand][num_beat] == '-')
+			    else if (ss[j] == ',')  {			    
+				num_beat ++;
+			    }
+			    else if (ss[j] == ')')
 			    {
-				ssthrow.push(ss[j]);
+				num_hand ++;
+			    }
+			    else if(ss[j] == ':') {
+				if(matrix[num_hand][num_beat] == '-')
+				{
+				    ssthrow.push(ss[j]);
+				}
+				j++;
+			    }
+			    else
+			    {			   
+				if(matrix[num_hand][num_beat] == '-')
+				{
+				    ssthrow.push(ss[j]);
+				}
 			    }
 			}
-		    }
-		    
-		    let valid = true;
-		    for(let j = 0; j < ssthrow.length; j++){
-			if(parseInt(ssthrow[j],16) < parseInt(minHeight,16) || parseInt(ssthrow[j],16) > parseInt(maxHeight,16)){
+			
+			let valid = true;
+			for(let j = 0; j < ssthrow.length; j++){
+			    if(parseInt(ssthrow[j],16) < parseInt(minHeight,16) || parseInt(ssthrow[j],16) > parseInt(maxHeight,16)){
 				valid = false;
 				break;
 			    }
@@ -361,198 +369,199 @@
 				valid = false;
 				break;
 			    }			    
-		    }		
-		
-		    if(valid == false) {
-			//console.log(ss);
-			continue;
+			}		
+			
+			if(valid == false) {
+			    //console.log(ss);
+			    continue;
+			}
+
+			cpt++;
+			let val1 = lines[i].split(';')[1].replace(/</g, '&lt;');
+			val1 = val1.replace(/>/g, '&gt;');
+			let val2 = lines[i].split(';')[3].replace(/</g, '&lt;');
+			val2 = val2.replace(/>/g, '&gt;');
+			let val3 = lines[i].split(';')[5].replace(/</g, '&lt;');
+			val3 = val3.replace(/>/g, '&gt;');
+			output = output + '\n<tr><td class=table_header>'+cpt+'</td><td class=table_content><a href=\'https://jugglinglab.org/anim?pattern='+val1+';colors=mixed\' target="_blank">'+val1+'</td><td class=table_content><a href=\'https://jugglinglab.org/anim?pattern='+val2+';colors=mixed\' target="_blank">'+val2+'</td><td class=table_content><a href=\'https://jugglinglab.org/anim?pattern='+val3+';colors=mixed\' target="_blank">'+val3+'</td><td class=table_content>'+lines[i].split(';')[0]+'</td><td class=table_content>'+lines[i].split(';')[2]+'</td><td class=table_content>'+lines[i].split(';')[4]+'</td></tr>';		
+			ssFileData = ssFileData + lines[i].split(';')[1] + '\n';
+			ssFileDataLowHeight = ssFileDataLowHeight + lines[i].split(';')[3] + '\n';
+			ssFileDataLowHeightJL = ssFileDataLowHeightJL + lines[i].split(';')[5] + '\n';
+		   	
+			JMLFileData = JMLFileData + '<line display=\''+val1+'\' notation="siteswap">\npattern='+val1+';colors={red}{green}{blue}{yellow}{magenta}{gray}{pink}{black}{cyan}{orange}\n</line>\n';		
+			JMLFileDataLowHeight = JMLFileDataLowHeight + '<line display=\''+val2+'\' notation="siteswap">\npattern='+val2+';colors={red}{green}{blue}{yellow}{magenta}{gray}{pink}{black}{cyan}{orange}\n</line>\n';
+			JMLFileDataLowHeightJL = JMLFileDataLowHeightJL + '<line display=\''+val3+'\' notation="siteswap">\npattern='+val3+';colors={red}{green}{blue}{yellow}{magenta}{gray}{pink}{black}{cyan}{orange}\n</line>\n';
+
 		    }
+		    
+		    output = output + '\n\n</table>\n';
+		    ssFileData = ssFileData + '\n   [ => '+cpt+' MJN(s) ]\n\n----------- Creation : JugglingTB (Module MHN v0.3)';
+		    ssFileDataLowHeight = ssFileDataLowHeight + '\n   [ => '+cpt+' MJN(s) ]\n\n----------- Creation : JugglingTB (Module MHN v0.3)';
+		    ssFileDataLowHeightJL = ssFileDataLowHeightJL + '\n   [ => '+cpt+' MJN(s) ]\n\n----------- Creation : JugglingTB (Module MHN v0.3)';
+		    JMLFileData = JMLFileData + '<line display="" />\n<line display="   [ => '+cpt+' MJN(s) ]"/>\n<line display="" />\n<line display="----------- Creation : JugglingTB (Module MHN v0.3)" />\n</patternlist>\n</jml>';
+		    JMLFileDataLowHeight = JMLFileDataLowHeight + '<line display="" />\n<line display="   [ => '+cpt+' MJN(s) ]"/>\n<line display="" />\n<line display="----------- Creation : JugglingTB (Module MHN v0.3)" />\n</patternlist>\n</jml>';
+		    JMLFileDataLowHeightJL = JMLFileDataLowHeightJL + '<line display="" />\n<line display="   [ => '+cpt+' MJN(s) ]"/>\n<line display="" />\n<line display="----------- Creation : JugglingTB (Module MHN v0.3)" />\n</patternlist>\n</jml>';
 
-		    cpt++;
-		    let val1 = lines[i].split(';')[1].replace(/</g, '&lt;');
-		    val1 = val1.replace(/>/g, '&gt;');
-		    let val2 = lines[i].split(';')[3].replace(/</g, '&lt;');
-		    val2 = val2.replace(/>/g, '&gt;');
-		    let val3 = lines[i].split(';')[5].replace(/</g, '&lt;');
-		    val3 = val3.replace(/>/g, '&gt;');
-		    output = output + '\n<tr><td class=table_header>'+cpt+'</td><td class=table_content><a href=\'https://jugglinglab.org/anim?pattern='+val1+';colors=mixed\' target="_blank">'+val1+'</td><td class=table_content><a href=\'https://jugglinglab.org/anim?pattern='+val2+';colors=mixed\' target="_blank">'+val2+'</td><td class=table_content><a href=\'https://jugglinglab.org/anim?pattern='+val3+';colors=mixed\' target="_blank">'+val3+'</td><td class=table_content>'+lines[i].split(';')[0]+'</td><td class=table_content>'+lines[i].split(';')[2]+'</td><td class=table_content>'+lines[i].split(';')[4]+'</td></tr>';		
-		    ssFileData = ssFileData + lines[i].split(';')[1] + '\n';
-		    ssFileDataLowHeight = ssFileDataLowHeight + lines[i].split(';')[3] + '\n';
-		    ssFileDataLowHeightJL = ssFileDataLowHeightJL + lines[i].split(';')[5] + '\n';
-		   		 
-		    JMLFileData = JMLFileData + '<line display=\''+val1+'\' notation="siteswap">\npattern='+val1+';colors={red}{green}{blue}{yellow}{magenta}{gray}{pink}{black}{cyan}{orange}\n</line>\n';		
-		    JMLFileDataLowHeight = JMLFileDataLowHeight + '<line display=\''+val2+'\' notation="siteswap">\npattern='+val2+';colors={red}{green}{blue}{yellow}{magenta}{gray}{pink}{black}{cyan}{orange}\n</line>\n';
-		    JMLFileDataLowHeightJL = JMLFileDataLowHeightJL + '<line display=\''+val3+'\' notation="siteswap">\npattern='+val3+';colors={red}{green}{blue}{yellow}{magenta}{gray}{pink}{black}{cyan}{orange}\n</line>\n';
+		    document.getElementById('insertHere').innerHTML = output;
+		    
+		    var ssFilename = 'polyrhythms-MJN-4hands-'+nbobj+'objects_'+ratioH0_1+'!'+ratioH1+'_'+ratioH0_2+'!'+ratioH2+'_'+ratioH0_3+'!'+ratioH3+'.txt';		
+		    var oldElem = document.getElementById('TXT1File');
+		    if(oldElem != null)
+		    {
+			document.body.removeChild(oldElem);
+			URL.revokeObjectURL(oldElem.href);
+		    }
+		    oldElem = document.getElementById('TXT1FileBR');
+		    if(oldElem != null)
+		    {
+			document.body.removeChild(oldElem);
+			URL.revokeObjectURL(oldElem.href);
+		    }
+		    var exportSSFile = new Blob([ssFileData]);
+		    var elem = window.document.createElement('a');
+		    elem.id = 'TXT1File';
+		    var newContent = document.createTextNode('Polyrhythms');
+		    elem.appendChild(newContent);
+		    elem.href = window.URL.createObjectURL(exportSSFile);
+		    elem.download = ssFilename;
+		    var currentNode = document.getElementById('TXT1');	  
+		    document.body.insertBefore(elem, currentNode);
+		    elem = window.document.createElement('br');
+		    elem.id = 'TXT1FileBR';
+		    document.body.insertBefore(elem, currentNode);
 
-		}
-		
-		output = output + '\n\n</table>\n';
-		ssFileData = ssFileData + '\n   [ => '+cpt+' MJN(s) ]\n\n----------- Creation : JugglingTB (Module MHN v0.3)';
-		ssFileDataLowHeight = ssFileDataLowHeight + '\n   [ => '+cpt+' MJN(s) ]\n\n----------- Creation : JugglingTB (Module MHN v0.3)';
-		ssFileDataLowHeightJL = ssFileDataLowHeightJL + '\n   [ => '+cpt+' MJN(s) ]\n\n----------- Creation : JugglingTB (Module MHN v0.3)';
-		JMLFileData = JMLFileData + '<line display="" />\n<line display="   [ => '+cpt+' MJN(s) ]"/>\n<line display="" />\n<line display="----------- Creation : JugglingTB (Module MHN v0.3)" />\n</patternlist>\n</jml>';
-		JMLFileDataLowHeight = JMLFileDataLowHeight + '<line display="" />\n<line display="   [ => '+cpt+' MJN(s) ]"/>\n<line display="" />\n<line display="----------- Creation : JugglingTB (Module MHN v0.3)" />\n</patternlist>\n</jml>';
-		JMLFileDataLowHeightJL = JMLFileDataLowHeightJL + '<line display="" />\n<line display="   [ => '+cpt+' MJN(s) ]"/>\n<line display="" />\n<line display="----------- Creation : JugglingTB (Module MHN v0.3)" />\n</patternlist>\n</jml>';
+		    var ssFilenameLowHeight = 'polyrhythms-MJN-4hands-'+nbobj+'objects_'+ratioH0_1+'!'+ratioH1+'_'+ratioH0_2+'!'+ratioH2+'_'+ratioH0_3+'!'+ratioH3+'-LowHeight.txt';
+		    oldElem = document.getElementById('TXT2File');
+		    if(oldElem != null)
+		    {
+			document.body.removeChild(oldElem);
+			URL.revokeObjectURL(oldElem.href);
+		    }
+		    oldElem = document.getElementById('TXT2FileBR');
+		    if(oldElem != null)
+		    {
+			document.body.removeChild(oldElem);
+			URL.revokeObjectURL(oldElem.href);
+		    }
+		    var exportSSFileLowHeight = new Blob([ssFileDataLowHeight]);
+		    elem = window.document.createElement('a');
+		    elem.id = 'TXT2File';
+		    newContent = document.createTextNode('Polyrhythms Low Heights');
+		    elem.appendChild(newContent);
+		    elem.href = window.URL.createObjectURL(exportSSFileLowHeight);
+		    elem.download = ssFilenameLowHeight;
+		    currentNode = document.getElementById('TXT2');	  
+		    document.body.insertBefore(elem, currentNode);
+		    elem = window.document.createElement('br');
+		    elem.id = 'TXT2FileBR';
+		    document.body.insertBefore(elem, currentNode);
 
-		document.getElementById('insertHere').innerHTML = output;
-		
-		var ssFilename = 'polyrhythms-MJN-4hands-'+nbobj+'objects_'+ratioH0_1+'!'+ratioH1+'_'+ratioH0_2+'!'+ratioH2+'_'+ratioH0_3+'!'+ratioH3+'.txt';		
-		var oldElem = document.getElementById('TXT1File');
-		if(oldElem != null)
-		{
-		    document.body.removeChild(oldElem);
-		    URL.revokeObjectURL(oldElem.href);
-		}
-		oldElem = document.getElementById('TXT1FileBR');
-		if(oldElem != null)
-		{
-		    document.body.removeChild(oldElem);
-		    URL.revokeObjectURL(oldElem.href);
-		}
-		var exportSSFile = new Blob([ssFileData]);
-		var elem = window.document.createElement('a');
-		elem.id = 'TXT1File';
-		var newContent = document.createTextNode('Polyrhythms');
-		elem.appendChild(newContent);
-		elem.href = window.URL.createObjectURL(exportSSFile);
-		elem.download = ssFilename;
-		var currentNode = document.getElementById('TXT1');	  
-		document.body.insertBefore(elem, currentNode);
-		elem = window.document.createElement('br');
-		elem.id = 'TXT1FileBR';
-		document.body.insertBefore(elem, currentNode);
+		    var ssFilenameLowHeightJL = 'polyrhythms-MJN-4hands-'+nbobj+'objects_'+ratioH0_1+'!'+ratioH1+'_'+ratioH0_2+'!'+ratioH2+'_'+ratioH0_3+'!'+ratioH3+'-LowHeightJL.txt';
+		    oldElem = document.getElementById('TXT3File');
+		    if(oldElem != null)
+		    {
+			document.body.removeChild(oldElem);
+			URL.revokeObjectURL(oldElem.href);
+		    }
+		    oldElem = document.getElementById('TXT3FileBR');
+		    if(oldElem != null)
+		    {
+			document.body.removeChild(oldElem);
+			URL.revokeObjectURL(oldElem.href);
+		    }
+		    var exportSSFileLowHeightJL = new Blob([ssFileDataLowHeightJL]);
+		    elem = window.document.createElement('a');
+		    elem.id = 'TXT3File';
+		    newContent = document.createTextNode('Polyrhythms Low Heights For JL');
+		    elem.appendChild(newContent);
+		    elem.href = window.URL.createObjectURL(exportSSFileLowHeightJL);
+		    elem.download = ssFilenameLowHeightJL;
+		    currentNode = document.getElementById('TXT3');	  
+		    document.body.insertBefore(elem, currentNode);
+		    elem = window.document.createElement('br');
+		    elem.id = 'TXT3FileBR';
+		    document.body.insertBefore(elem, currentNode);
 
-		var ssFilenameLowHeight = 'polyrhythms-MJN-4hands-'+nbobj+'objects_'+ratioH0_1+'!'+ratioH1+'_'+ratioH0_2+'!'+ratioH2+'_'+ratioH0_3+'!'+ratioH3+'-LowHeight.txt';
-		oldElem = document.getElementById('TXT2File');
-		if(oldElem != null)
-		{
-		    document.body.removeChild(oldElem);
-		    URL.revokeObjectURL(oldElem.href);
-		}
-		oldElem = document.getElementById('TXT2FileBR');
-		if(oldElem != null)
-		{
-		    document.body.removeChild(oldElem);
-		    URL.revokeObjectURL(oldElem.href);
-		}
-		var exportSSFileLowHeight = new Blob([ssFileDataLowHeight]);
-		elem = window.document.createElement('a');
-		elem.id = 'TXT2File';
-		newContent = document.createTextNode('Polyrhythms Low Heights');
-		elem.appendChild(newContent);
-		elem.href = window.URL.createObjectURL(exportSSFileLowHeight);
-		elem.download = ssFilenameLowHeight;
-		currentNode = document.getElementById('TXT2');	  
-		document.body.insertBefore(elem, currentNode);
-		elem = window.document.createElement('br');
-		elem.id = 'TXT2FileBR';
-		document.body.insertBefore(elem, currentNode);
+		    var JMLFilename = 'polyrhythms-MJN-4hands-'+nbobj+'objects_'+ratioH0_1+'!'+ratioH1+'_'+ratioH0_2+'!'+ratioH2+'_'+ratioH0_3+'!'+ratioH3+'.jml';
+		    oldElem = document.getElementById('JML1File');
+		    if(oldElem != null)
+		    {
+			document.body.removeChild(oldElem);
+			URL.revokeObjectURL(oldElem.href);
+		    }
+		    oldElem = document.getElementById('JML1FileBR');
+		    if(oldElem != null)
+		    {
+			document.body.removeChild(oldElem);
+			URL.revokeObjectURL(oldElem.href);
+		    }
+		    var exportJMLFile = new Blob([JMLFileData]);
+		    elem = window.document.createElement('a');
+		    elem.id = 'JML1File';
+		    newContent = document.createTextNode('Polyrhythms');
+		    elem.appendChild(newContent);
+		    elem.href = window.URL.createObjectURL(exportJMLFile);
+		    elem.download = JMLFilename;
+		    currentNode = document.getElementById('JML1');	  
+		    document.body.insertBefore(elem, currentNode);
+		    elem = window.document.createElement('br');
+		    elem.id = 'JML1FileBR';
+		    document.body.insertBefore(elem, currentNode);
 
-		var ssFilenameLowHeightJL = 'polyrhythms-MJN-4hands-'+nbobj+'objects_'+ratioH0_1+'!'+ratioH1+'_'+ratioH0_2+'!'+ratioH2+'_'+ratioH0_3+'!'+ratioH3+'-LowHeightJL.txt';
-		oldElem = document.getElementById('TXT3File');
-		if(oldElem != null)
-		{
-		    document.body.removeChild(oldElem);
-		    URL.revokeObjectURL(oldElem.href);
-		}
-		oldElem = document.getElementById('TXT3FileBR');
-		if(oldElem != null)
-		{
-		    document.body.removeChild(oldElem);
-		    URL.revokeObjectURL(oldElem.href);
-		}
-		var exportSSFileLowHeightJL = new Blob([ssFileDataLowHeightJL]);
-		elem = window.document.createElement('a');
-		elem.id = 'TXT3File';
-		newContent = document.createTextNode('Polyrhythms Low Heights For JL');
-		elem.appendChild(newContent);
-		elem.href = window.URL.createObjectURL(exportSSFileLowHeightJL);
-		elem.download = ssFilenameLowHeightJL;
-		currentNode = document.getElementById('TXT3');	  
-		document.body.insertBefore(elem, currentNode);
-		elem = window.document.createElement('br');
-		elem.id = 'TXT3FileBR';
-		document.body.insertBefore(elem, currentNode);
+		    var JMLFilenameLowHeight = 'polyrhythms-MJN-4hands-'+nbobj+'objects_'+ratioH0_1+'!'+ratioH1+'_'+ratioH0_2+'!'+ratioH2+'_'+ratioH0_3+'!'+ratioH3+'-LowHeight.jml';
+		    oldElem = document.getElementById('JML2File');
+		    if(oldElem != null)
+		    {
+			document.body.removeChild(oldElem);
+			URL.revokeObjectURL(oldElem.href);
+		    }
+		    oldElem = document.getElementById('JML2FileBR');
+		    if(oldElem != null)
+		    {
+			document.body.removeChild(oldElem);
+			URL.revokeObjectURL(oldElem.href);
+		    }
+		    var exportJMLFileLowHeight = new Blob([JMLFileDataLowHeight]);
+		    elem = window.document.createElement('a');
+		    elem.id = 'JML2File';
+		    newContent = document.createTextNode('Polyrhythms Low Heights');
+		    elem.appendChild(newContent);
+		    elem.href = window.URL.createObjectURL(exportJMLFileLowHeight);
+		    elem.download = JMLFilenameLowHeight;
+		    currentNode = document.getElementById('JML2');	  
+		    document.body.insertBefore(elem, currentNode);
+		    elem = window.document.createElement('br');
+		    elem.id = 'JML2FileBR';
+		    document.body.insertBefore(elem, currentNode);
 
-		var JMLFilename = 'polyrhythms-MJN-4hands-'+nbobj+'objects_'+ratioH0_1+'!'+ratioH1+'_'+ratioH0_2+'!'+ratioH2+'_'+ratioH0_3+'!'+ratioH3+'.jml';
-		oldElem = document.getElementById('JML1File');
-		if(oldElem != null)
-		{
-		    document.body.removeChild(oldElem);
-		    URL.revokeObjectURL(oldElem.href);
-		}
-		oldElem = document.getElementById('JML1FileBR');
-		if(oldElem != null)
-		{
-		    document.body.removeChild(oldElem);
-		    URL.revokeObjectURL(oldElem.href);
-		}
-		var exportJMLFile = new Blob([JMLFileData]);
-		elem = window.document.createElement('a');
-		elem.id = 'JML1File';
-		newContent = document.createTextNode('Polyrhythms');
-		elem.appendChild(newContent);
-		elem.href = window.URL.createObjectURL(exportJMLFile);
-		elem.download = JMLFilename;
-		currentNode = document.getElementById('JML1');	  
-		document.body.insertBefore(elem, currentNode);
-		elem = window.document.createElement('br');
-		elem.id = 'JML1FileBR';
-		document.body.insertBefore(elem, currentNode);
-
-		var JMLFilenameLowHeight = 'polyrhythms-MJN-4hands-'+nbobj+'objects_'+ratioH0_1+'!'+ratioH1+'_'+ratioH0_2+'!'+ratioH2+'_'+ratioH0_3+'!'+ratioH3+'-LowHeight.jml';
-		oldElem = document.getElementById('JML2File');
-		if(oldElem != null)
-		{
-		    document.body.removeChild(oldElem);
-		    URL.revokeObjectURL(oldElem.href);
-		}
-		oldElem = document.getElementById('JML2FileBR');
-		if(oldElem != null)
-		{
-		    document.body.removeChild(oldElem);
-		    URL.revokeObjectURL(oldElem.href);
-		}
-		var exportJMLFileLowHeight = new Blob([JMLFileDataLowHeight]);
-		elem = window.document.createElement('a');
-		elem.id = 'JML2File';
-		newContent = document.createTextNode('Polyrhythms Low Heights');
-		elem.appendChild(newContent);
-		elem.href = window.URL.createObjectURL(exportJMLFileLowHeight);
-		elem.download = JMLFilenameLowHeight;
-		currentNode = document.getElementById('JML2');	  
-		document.body.insertBefore(elem, currentNode);
-		elem = window.document.createElement('br');
-		elem.id = 'JML2FileBR';
-		document.body.insertBefore(elem, currentNode);
-
-		var JMLFilenameLowHeightJL = 'polyrhythms-MJN-4hands-'+nbobj+'objects_'+ratioH0_1+'!'+ratioH1+'_'+ratioH0_2+'!'+ratioH2+'_'+ratioH0_3+'!'+ratioH3+'-LowHeightJL.jml';
-		oldElem = document.getElementById('JML3File');
-		if(oldElem != null)
-		{
-		    document.body.removeChild(oldElem);
-		    URL.revokeObjectURL(oldElem.href);
-		}
-		oldElem = document.getElementById('JML3FileBR');
-		if(oldElem != null)
-		{
-		    document.body.removeChild(oldElem);
-		    URL.revokeObjectURL(oldElem.href);
-		}
-		var exportJMLFileLowHeightJL = new Blob([JMLFileDataLowHeightJL]);
-		elem = window.document.createElement('a');
-		elem.id = 'JML3File';
-		newContent = document.createTextNode('Polyrhythms Low Heights For JL');
-		elem.appendChild(newContent);
-		elem.href = window.URL.createObjectURL(exportJMLFileLowHeightJL);
-		elem.download = JMLFilenameLowHeightJL;
-		currentNode = document.getElementById('JML3');	  
-		document.body.insertBefore(elem, currentNode);
-		elem = window.document.createElement('br');
-		elem.id = 'JML3FileBR';
-		document.body.insertBefore(elem, currentNode);
-		
+		    var JMLFilenameLowHeightJL = 'polyrhythms-MJN-4hands-'+nbobj+'objects_'+ratioH0_1+'!'+ratioH1+'_'+ratioH0_2+'!'+ratioH2+'_'+ratioH0_3+'!'+ratioH3+'-LowHeightJL.jml';
+		    oldElem = document.getElementById('JML3File');
+		    if(oldElem != null)
+		    {
+			document.body.removeChild(oldElem);
+			URL.revokeObjectURL(oldElem.href);
+		    }
+		    oldElem = document.getElementById('JML3FileBR');
+		    if(oldElem != null)
+		    {
+			document.body.removeChild(oldElem);
+			URL.revokeObjectURL(oldElem.href);
+		    }
+		    var exportJMLFileLowHeightJL = new Blob([JMLFileDataLowHeightJL]);
+		    elem = window.document.createElement('a');
+		    elem.id = 'JML3File';
+		    newContent = document.createTextNode('Polyrhythms Low Heights For JL');
+		    elem.appendChild(newContent);
+		    elem.href = window.URL.createObjectURL(exportJMLFileLowHeightJL);
+		    elem.download = JMLFilenameLowHeightJL;
+		    currentNode = document.getElementById('JML3');	  
+		    document.body.insertBefore(elem, currentNode);
+		    elem = window.document.createElement('br');
+		    elem.id = 'JML3FileBR';
+		    document.body.insertBefore(elem, currentNode);
+		})
 	    }
+
 
 	    else if(xhr.status == 404)
 	    {
@@ -567,7 +576,7 @@
 	}
 
 
-	xhr.open('GET', URLHOST+file, true);
+	xhr.open('GET', URLHOST+'db_MHN/'+file+'.txt.zip', true);
 	xhr.send();
     }
 
@@ -596,19 +605,19 @@
 	    document.getElementById('insertHere').innerHTML = output;
 	    return;
 	}
-//	if(ratioR < MINRATIOR || ratioR > MAXRATIOR){
-//	    var output = '\n\n<p><span style="color:red">Ratio Right is invalid is DB ['+MINRATIOR+'..'+MAXRATIOR+'] </span></p>';
-//	    document.getElementById('insertHere').innerHTML = output;
-//	    return;
-//	}
-//	if(ratioL < MINRATIOL || ratioL > MAXRATIOL){
-//	    var output = '\n\n<p><span style="color:red">Ratio Left is invalid in DB ['+MINRATIOL+'..'+MAXRATIOL+'] </span></p>';
-//	    document.getElementById('insertHere').innerHTML = output;
-//	    return;
-//	}
+	//	if(ratioR < MINRATIOR || ratioR > MAXRATIOR){
+	//	    var output = '\n\n<p><span style="color:red">Ratio Right is invalid is DB ['+MINRATIOR+'..'+MAXRATIOR+'] </span></p>';
+	//	    document.getElementById('insertHere').innerHTML = output;
+	//	    return;
+	//	}
+	//	if(ratioL < MINRATIOL || ratioL > MAXRATIOL){
+	//	    var output = '\n\n<p><span style="color:red">Ratio Left is invalid in DB ['+MINRATIOL+'..'+MAXRATIOL+'] </span></p>';
+	//	    document.getElementById('insertHere').innerHTML = output;
+	//	    return;
+	//	}
 
-	var fileIn = 'polyrhythms-MHN-4hands-'+nbobj+'objects_'+ratioH0_1+'!'+ratioH1+'_'+ratioH0_2+'!'+ratioH2+'_'+ratioH0_3+'!'+ratioH3+'.txt';
-	readAndParseDBfile('db_MHN/'+fileIn);	
+	var fileIn = 'polyrhythms-MHN-4hands-'+nbobj+'objects_'+ratioH0_1+'!'+ratioH1+'_'+ratioH0_2+'!'+ratioH2+'_'+ratioH0_3+'!'+ratioH3;
+	readAndParseDBfile(fileIn);	
     }
 
 

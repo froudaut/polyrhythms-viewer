@@ -1,5 +1,5 @@
 <HEAD>
-  <TITLE>Polyrhythms Viewer : Duplex (v1.0)</TITLE>
+  <TITLE>Polyrhythms Viewer : Duplex (v1.1)</TITLE>
 
   <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
   <meta content="utf-8" http-equiv="encoding">
@@ -53,15 +53,17 @@
     var MINRATIOL = 1;
     var MAXRATIOR = 5;
     var MAXRATIOL = 5;
-    var URLHOST = '/data/juggling/tools/polyrhythms/';    
+    var URLHOST = './';    
   </script>
 
+  <script src="lib/jszip/dist/jszip.js"></script>
+  
 </HEAD>
 
 
 <BODY>
 
-  <h1>Polyrhythms Viewer : Duplex (v1.0)</h1>
+  <h1>Polyrhythms Viewer : Duplex (v1.1)</h1>
 
   <p>
 
@@ -125,9 +127,9 @@
   <p>&nbsp;</p><p>Nb: <ul>
       <li>Throws contain at least one duplex here. If you are looking for simplexes only go <a href="polyrhythms-viewer.html" target="_blank">Here</a>.</li>
       <li>Some sheets are not available either because it was too big or it was too long to generate.</li>
-      <li>Height are in Hexadecimal and Max Height is f.</li>
+      <li>Heights are in Hexadecimal and Max Height is f.</li>
       <li>Throws to exclude are separated by "<em>;</em>". It concerns not only heights: i.e you may declare 3x, 4x ...</li>
-      <li>Factor Polyrhythms are not simplified. I.E it means that Period of Polyrythms k:kM is computed here as k<sup>2</sup>M.   
+      <li>Factor Polyrhythms are not simplified. I.E it means that Period of Polyrhythms k:kM is computed here as k<sup>2</sup>M. </li>  
     </ul>
   </p>
   
@@ -142,9 +144,11 @@
 	if(window.XMLHttpRequest){
 	    // IE7+, Firefox, Chrome, Opera, Safari
 	    xhr = new XMLHttpRequest();
+	    xhr.responseType = "arraybuffer";
 	}else{
 	    // IE5, IE6  - next line supports these dinosaurs
 	    xhr = new ActiveXObject("Microsoft.XMLHTTP");
+	    xhr.responseType = "arraybuffer";
 	}
 	xhr.onreadystatechange = function(){
 	    if(xhr.readyState == 4 && xhr.status == 200){
@@ -166,7 +170,7 @@
 
 		var output = '<table border="0" id="polyrythmes">\n<tr><td COLSPAN=1></td><td class=table_header>Siteswaps</td><td class=table_header>Same Tempo/Extra Holding Time</td><td class=table_header>Same Tempo/Split Extra Holding Time for JL</td>\n</tr>\n';
 		var ssFileData = '-- Polyrhythms Siteswaps --\n\n========================================\n'+nbobj+' objects - '+ratioR+':'+ratioL+'\nMin Height: '+minHeight+'\nMax Height: '+maxHeight+'\nExclude Throws: '+document.getElementById("exclude").value+'\n========================================\n\n';
-		var ssFileDataLowHeight = '-- Polyrhythms Siteswaps Low Heights --\n\n ========================================\n'+nbobj+' objects - '+ratioR+':'+ratioL+'\nMin Height: '+minHeight+'\nMax Height: '+maxHeight+'\nExclude Throws: '+document.getElementById("exclude").value+'\n========================================\n\n';
+		var ssFileDataLowHeight = '-- Polyrhythms Siteswaps Low Heights --\n\n========================================\n'+nbobj+' objects - '+ratioR+':'+ratioL+'\nMin Height: '+minHeight+'\nMax Height: '+maxHeight+'\nExclude Throws: '+document.getElementById("exclude").value+'\n========================================\n\n';
 		var ssFileDataLowHeightJL = '-- Polyrhythms Siteswaps Low Heights for JugglingLab --\n\n========================================\n'+nbobj+' objects - '+ratioR+':'+ratioL+'\nMin Height: '+minHeight+'\nMax Height: '+maxHeight+'\nExclude Throws: '+document.getElementById("exclude").value+'\n========================================\n\n';	   
 		var JMLFileData = '<?xml version="1.0"?>\n<!DOCTYPE jml SYSTEM "file://jml.dtd">\n<jml version="1.2">\n<patternlist>\n<title>'+'Polyrhythms Siteswaps</title>\n<line display="========================================"/>\n<line display="'+nbobj+' objects - '+ratioR+':'+ratioL+'"/>\n<line display="Min Height: '+minHeight+'"/>\n<line display="Max Height: '+maxHeight+'"/>\n<line display="Exclude Throws: '+document.getElementById("exclude").value+'"/>\n<line display="========================================"/>\n';
 		var JMLFileDataLowHeight = '<?xml version="1.0"?>\n<!DOCTYPE jml SYSTEM "file://jml.dtd">\n<jml version="1.2">\n<patternlist>\n<title>'+'Polyrhythms Siteswaps Low Heights</title>\n<line display="========================================"/>\n<line display="'+nbobj+' objects - '+ratioR+':'+ratioL+'"/>\n<line display="Min Height: '+minHeight+'"/>\n<line display="Max Height: '+maxHeight+'"/>\n<line display="Exclude Throws: '+document.getElementById("exclude").value+'"/>\n<line display="========================================"/>\n';
@@ -217,42 +221,89 @@
 		}
 
 		console.log('Model : '+ssModel);
+		// lines = text.split("\n");		    
+		// text = xhr.responseText;
 
-		
-		text = xhr.responseText;
-		lines = text.split("\n");
-		
-		for(let i = 0; i < lines.length; i++){ 
-		    //console.log(lines[i]);
-		    lines[i] = lines[i].replace(/\s+/g, '');
-		    if(lines[i] == ''){
-			continue;
-		    }
-		    let ss=lines[i].split(';')[0];
-		    let hand = 'R';
-		    let ssrightH1 = [];
-		    let ssrightH2 = [];
-		    let ssleftH1 = [];
-		    let ssleftH2 = [];
+		JSZip.loadAsync(xhr.response).then(function (zip) {
+		    // console.log(zip.files);		 
+		    return zip.file(file+".txt").async("string");
+		}).then(function (text) {		
+		    lines = text.split("\n");
 		    
-		    for(let j = 0; j < ss.length; j++){
-			if(ss[j] == '('){
-			    hand = 'R';
+		    for(let i = 0; i < lines.length; i++){ 
+			//console.log(lines[i]);
+			lines[i] = lines[i].replace(/\s+/g, '');
+			if(lines[i] == ''){
+			    continue;
 			}
-			else if(ss[j] == ','){
-			    hand = 'L';
-			}
-			else if(ss[j] == ')' || ss[j] == '!') {	
-			}
-			else if(ss[j] == '[') {
-			    j++;
-			    let valssrightH1=[];
-			    let valssrightH2=[];
-			    let valssleftH1=[];
-			    let valssleftH2=[];
+			let ss=lines[i].split(';')[0];
+			let hand = 'R';
+			let ssrightH1 = [];
+			let ssrightH2 = [];
+			let ssleftH1 = [];
+			let ssleftH2 = [];
+			
+			for(let j = 0; j < ss.length; j++){
+			    if(ss[j] == '('){
+				hand = 'R';
+			    }
+			    else if(ss[j] == ','){
+				hand = 'L';
+			    }
+			    else if(ss[j] == ')' || ss[j] == '!') {	
+			    }
+			    else if(ss[j] == '[') {
+				j++;
+				let valssrightH1=[];
+				let valssrightH2=[];
+				let valssleftH1=[];
+				let valssleftH2=[];
 
-			    while(ss[j] != ']')
+				while(ss[j] != ']')
+				{
+				    if(j+1 < ss.length && ss[j+1].toUpperCase() == 'X')
+				    {
+					if(hand == 'R'){
+					    valssrightH1.push(ss[j]);
+					    valssrightH2.push(ss[j]+'x');
+					}
+					else{
+					    valssleftH1.push(ss[j]);
+					    valssleftH2.push(ss[j]+'x');
+					}
+					j++;
+				    }
+				    else
+				    {
+					if(hand == 'R'){
+					    valssrightH1.push(ss[j]);
+					    valssrightH2.push(ss[j]);
+					}
+					else{
+					    valssleftH1.push(ss[j]);
+					    valssleftH2.push(ss[j]);
+					}
+				    }
+				    j++
+				}
+				if(valssrightH1.length != 0)
+				{
+				    ssrightH1.push(valssrightH1);
+				    ssrightH2.push(valssrightH2);
+				}
+				else if(valssleftH1.length != 0)
+				{
+				    ssleftH1.push(valssleftH1);
+				    ssleftH2.push(valssleftH2);
+				}
+			    }
+			    else
 			    {
+				let valssrightH1=[];
+				let valssrightH2=[];
+				let valssleftH1=[];
+				let valssleftH2=[];
+
 				if(j+1 < ss.length && ss[j+1].toUpperCase() == 'X')
 				{
 				    if(hand == 'R'){
@@ -265,8 +316,7 @@
 				    }
 				    j++;
 				}
-				else
-				{
+				else{
 				    if(hand == 'R'){
 					valssrightH1.push(ss[j]);
 					valssrightH2.push(ss[j]);
@@ -274,343 +324,302 @@
 				    else{
 					valssleftH1.push(ss[j]);
 					valssleftH2.push(ss[j]);
+				    }				
+				}
+
+				if(valssrightH1.length != 0)
+				{
+				    ssrightH1.push(valssrightH1);
+				    ssrightH2.push(valssrightH2);
+				}
+				else if(valssleftH1.length != 0)
+				{
+				    ssleftH1.push(valssleftH1);
+				    ssleftH2.push(valssleftH2);
+				}
+			    }		    
+			}
+			
+			let valid = true;
+			for(let j = 0; j < rightH.length; j++){
+			    
+			    if(rightH[j] == '-'){
+				let prevH1 = 16;
+				let prevH2 = 'g';
+				for(let k = 0; k < (ssrightH1[j%ssrightH1.length]).length; k++){
+				    if(parseInt(ssrightH1[j%ssrightH1.length][k],16) < parseInt(minHeight,16)
+				       || parseInt(ssrightH1[j%ssrightH1.length][k],16) > parseInt(maxHeight,16)){
+					valid = false;
+					break;
+				    }
+				    if(noperm == true)
+				    {
+					if((parseInt(ssrightH1[j%ssrightH1.length][k],16) > prevH1)
+					   || ((parseInt(ssrightH1[j%ssrightH1.length][k],16) == prevH1)
+					       && ((ssrightH2[j%ssrightH2.length][k]).length>1)
+					       && (prevH2.length==1))
+					  )
+					{
+					    valid = false;
+					    break;
+					}				
+					else
+					{
+					    prevH1 = parseInt(ssrightH1[j%ssrightH1.length][k],16);
+					    prevH2 = ssrightH2[j%ssrightH2.length][k];					
+					}
 				    }
 				}
-				j++
+				if(valid == false)
+				{
+				    break;
+				}
+				for(let k = 0; k < (ssrightH2[j%ssrightH2.length]).length; k++){
+				    if(exclude.includes(ssrightH2[j%ssrightH2.length][k].toUpperCase())){
+					valid = false;
+					break;
+				    }
+				}
+				
+				if(valid == false)
+				{
+				    break;
+				}
 			    }
-			    if(valssrightH1.length != 0)
-			    {
-				ssrightH1.push(valssrightH1);
-				ssrightH2.push(valssrightH2);
-			    }
-			    else if(valssleftH1.length != 0)
-			    {
-				ssleftH1.push(valssleftH1);
-				ssleftH2.push(valssleftH2);
+			    
+			    if(leftH[j] == '-'){
+				let prevH1 = 16;
+				let prevH2 = 'g';
+				
+				for(let k = 0; k < (ssleftH1[j%ssleftH1.length]).length; k++){		
+				    if(parseInt(ssleftH1[j%ssleftH1.length][k],16) < parseInt(minHeight,16)
+				       || parseInt(ssleftH1[j%ssleftH1.length][k],16) > parseInt(maxHeight,16)){
+					valid = false;
+					break;
+				    }			    
+				    if(noperm == true)
+				    {
+					if((parseInt(ssleftH1[j%ssleftH1.length][k],16) > prevH1)
+					   || ((parseInt(ssleftH1[j%ssleftH1.length][k],16) == prevH1)
+					       && ((ssleftH2[j%ssleftH2.length][k]).length>1)
+					       && (prevH2.length==1))
+					  )				
+					{
+					    valid = false;
+					    break;
+					}				
+					else
+					{
+					    prevH1 = parseInt(ssleftH1[j%ssleftH1.length][k],16);
+					    prevH2 = ssleftH2[j%ssleftH2.length][k];					
+					}
+				    }
+				}
+				
+				if(valid == false)
+				{
+				    break;
+				}
+
+				for(let k = 0; k < (ssleftH2[j%ssleftH2.length]).length; k++){
+				    if(exclude.includes(ssleftH2[j%ssleftH2.length][k].toUpperCase())){
+					valid = false;
+					break;
+				    }			    
+				}
+				if(valid == false)
+				{
+				    break;
+				}
 			    }
 			}
-			else
-			{
-			    let valssrightH1=[];
-			    let valssrightH2=[];
-			    let valssleftH1=[];
-			    let valssleftH2=[];
 
-			    if(j+1 < ss.length && ss[j+1].toUpperCase() == 'X')
-			    {
-				if(hand == 'R'){
-				    valssrightH1.push(ss[j]);
-				    valssrightH2.push(ss[j]+'x');
-				}
-				else{
-				    valssleftH1.push(ss[j]);
-				    valssleftH2.push(ss[j]+'x');
-				}
-				j++;
-			    }
-			    else{
-				if(hand == 'R'){
-				    valssrightH1.push(ss[j]);
-				    valssrightH2.push(ss[j]);
-				}
-				else{
-				    valssleftH1.push(ss[j]);
-				    valssleftH2.push(ss[j]);
-				}				
-			    }
+			if(valid == false) {
+			    //console.log(ss);
+			    continue;
+			}
 
-			    if(valssrightH1.length != 0)
-			    {
-				ssrightH1.push(valssrightH1);
-				ssrightH2.push(valssrightH2);
-			    }
-			    else if(valssleftH1.length != 0)
-			    {
-				ssleftH1.push(valssleftH1);
-				ssleftH2.push(valssleftH2);
-			    }
-			}		    
+			cpt++;
+			//output = output + '\n<tr><td class=table_header>'+cpt+'</td><td class=table_content>'+lines[i].split(';')[1]+'</td><td class=table_content>'+lines[i].split(';')[2]+'</td><td class=table_content>'+lines[i].split(';')[3]+'</td></tr>';
+			output = output + '\n<tr><td class=table_header>'+cpt+'</td><td class=table_content><a href=\'https://jugglinglab.org/anim?pattern='+lines[i].split(';')[1]+';colors=mixed\' target="_blank">'+lines[i].split(';')[1]+'<a></td><td class=table_content><a href=\'https://jugglinglab.org/anim?pattern='+lines[i].split(';')[2]+';colors=mixed\' target="_blank">'+lines[i].split(';')[2]+'<a></td><td class=table_content><a href=\'https://jugglinglab.org/anim?pattern='+lines[i].split(';')[3]+';colors=mixed\' target="_blank">'+lines[i].split(';')[3]+'</a></td></tr>';		
+
+			ssFileData = ssFileData + lines[i].split(';')[1] + '\n';
+			ssFileDataLowHeight = ssFileDataLowHeight + lines[i].split(';')[2] + '\n';
+			ssFileDataLowHeightJL = ssFileDataLowHeightJL + lines[i].split(';')[3] + '\n';
+
+			JMLFileData = JMLFileData + '<line display=\''+lines[i].split(';')[1]+'\' notation="siteswap">\npattern='+lines[i].split(';')[1]+';colors={red}{green}{blue}{yellow}{magenta}{gray}{pink}{black}{cyan}{orange}\n</line>\n';
+			JMLFileDataLowHeight = JMLFileDataLowHeight + '<line display=\''+lines[i].split(';')[2]+'\' notation="siteswap">\npattern='+lines[i].split(';')[2]+';colors={red}{green}{blue}{yellow}{magenta}{gray}{pink}{black}{cyan}{orange}\n</line>\n';
+			JMLFileDataLowHeightJL = JMLFileDataLowHeightJL + '<line display=\''+lines[i].split(';')[3]+'\' notation="siteswap">\npattern='+lines[i].split(';')[3]+';colors={red}{green}{blue}{yellow}{magenta}{gray}{pink}{black}{cyan}{orange}\n</line>\n';
+
 		    }
 		    
-		    let valid = true;
-		    for(let j = 0; j < rightH.length; j++){
-			
-			if(rightH[j] == '-'){
-			    let prevH1 = 16;
-			    let prevH2 = 'g';
-			    for(let k = 0; k < (ssrightH1[j%ssrightH1.length]).length; k++){
-				if(parseInt(ssrightH1[j%ssrightH1.length][k],16) < parseInt(minHeight,16)
-				   || parseInt(ssrightH1[j%ssrightH1.length][k],16) > parseInt(maxHeight,16)){
-				    valid = false;
-				    break;
-				}
-				if(noperm == true)
-				{
-				    if((parseInt(ssrightH1[j%ssrightH1.length][k],16) > prevH1)
-				       || ((parseInt(ssrightH1[j%ssrightH1.length][k],16) == prevH1)
-					   && ((ssrightH2[j%ssrightH2.length][k]).length>1)
-					   && (prevH2.length==1))
-				      )
-				    {
-					valid = false;
-					break;
-				    }				
-				    else
-				    {
-					prevH1 = parseInt(ssrightH1[j%ssrightH1.length][k],16);
-					prevH2 = ssrightH2[j%ssrightH2.length][k];					
-				    }
-				}
-			    }
-			    if(valid == false)
-			    {
-				break;
-			    }
-			    for(let k = 0; k < (ssrightH2[j%ssrightH2.length]).length; k++){
-				if(exclude.includes(ssrightH2[j%ssrightH2.length][k].toUpperCase())){
-				    valid = false;
-				    break;
-				}
-			    }
-			    
-			    if(valid == false)
-			    {
-				break;
-			    }
-			}
-			
-			if(leftH[j] == '-'){
-			    let prevH1 = 16;
-			    let prevH2 = 'g';
-			    
-			    for(let k = 0; k < (ssleftH1[j%ssleftH1.length]).length; k++){		
-				if(parseInt(ssleftH1[j%ssleftH1.length][k],16) < parseInt(minHeight,16)
-				   || parseInt(ssleftH1[j%ssleftH1.length][k],16) > parseInt(maxHeight,16)){
-				    valid = false;
-				    break;
-				}			    
-				if(noperm == true)
-				{
-				    if((parseInt(ssleftH1[j%ssleftH1.length][k],16) > prevH1)
-				       || ((parseInt(ssleftH1[j%ssleftH1.length][k],16) == prevH1)
-					   && ((ssleftH2[j%ssleftH2.length][k]).length>1)
-					   && (prevH2.length==1))
-				      )				
-				    {
-					valid = false;
-					break;
-				    }				
-				    else
-				    {
-					prevH1 = parseInt(ssleftH1[j%ssleftH1.length][k],16);
-					prevH2 = ssleftH2[j%ssleftH2.length][k];					
-				    }
-				}
-			    }
-			    
-			    if(valid == false)
-			    {
-				break;
-			    }
+		    output = output + '\n\n</table>\n';
+		    ssFileData = ssFileData + '\n   [ => '+cpt+' Siteswap(s) ]\n\n----------- Creation : JugglingTB (Module SSWAP v1.5)';
+		    ssFileDataLowHeight = ssFileDataLowHeight + '\n   [ => '+cpt+' Siteswap(s) ]\n\n----------- Creation : JugglingTB (Module SSWAP v1.5)';
+		    ssFileDataLowHeightJL = ssFileDataLowHeightJL + '\n   [ => '+cpt+' Siteswap(s) ]\n\n----------- Creation : JugglingTB (Module SSWAP v1.5)';
+		    JMLFileData = JMLFileData + '<line display="" />\n<line display="   [ => '+cpt+' Siteswap(s) ]"/>\n<line display="" />\n<line display="----------- Creation : JugglingTB (Module SSWAP v1.5)" />\n</patternlist>\n</jml>';
+		    JMLFileDataLowHeight = JMLFileDataLowHeight + '<line display="" />\n<line display="   [ => '+cpt+' Siteswap(s) ]"/>\n<line display="" />\n<line display="----------- Creation : JugglingTB (Module SSWAP v1.5)" />\n</patternlist>\n</jml>';
+		    JMLFileDataLowHeightJL = JMLFileDataLowHeightJL + '<line display="" />\n<line display="   [ => '+cpt+' Siteswap(s) ]"/>\n<line display="" />\n<line display="----------- Creation : JugglingTB (Module SSWAP v1.5)" />\n</patternlist>\n</jml>';
 
-			    for(let k = 0; k < (ssleftH2[j%ssleftH2.length]).length; k++){
-				if(exclude.includes(ssleftH2[j%ssleftH2.length][k].toUpperCase())){
-				    valid = false;
-				    break;
-				}			    
-			    }
-			    if(valid == false)
-			    {
-				break;
-			    }
-			}
+		    document.getElementById('insertHere').innerHTML = output;
+		    
+		    var ssFilename = 'polyrhythms-'+nbobj+'objects_'+ratioR+'!'+ratioL+'_mult2.txt';
+		    var oldElem = document.getElementById('TXT1File');
+		    if(oldElem != null)
+		    {
+			document.body.removeChild(oldElem);
+			URL.revokeObjectURL(oldElem.href);
 		    }
-
-		    if(valid == false) {
-			//console.log(ss);
-			continue;
+		    oldElem = document.getElementById('TXT1FileBR');
+		    if(oldElem != null)
+		    {
+			document.body.removeChild(oldElem);
+			URL.revokeObjectURL(oldElem.href);
 		    }
+		    var exportSSFile = new Blob([ssFileData]);
+		    var elem = window.document.createElement('a');
+		    elem.id = 'TXT1File';
+		    var newContent = document.createTextNode('Polyrhythms');
+		    elem.appendChild(newContent);
+		    elem.href = window.URL.createObjectURL(exportSSFile);
+		    elem.download = ssFilename;
+		    var currentNode = document.getElementById('TXT1');	  
+		    document.body.insertBefore(elem, currentNode);
+		    elem = window.document.createElement('br');
+		    elem.id = 'TXT1FileBR';
+		    document.body.insertBefore(elem, currentNode);
 
-		    cpt++;
-		    //output = output + '\n<tr><td class=table_header>'+cpt+'</td><td class=table_content>'+lines[i].split(';')[1]+'</td><td class=table_content>'+lines[i].split(';')[2]+'</td><td class=table_content>'+lines[i].split(';')[3]+'</td></tr>';
-		    output = output + '\n<tr><td class=table_header>'+cpt+'</td><td class=table_content><a href=\'https://jugglinglab.org/anim?pattern='+lines[i].split(';')[1]+';colors=mixed\' target="_blank">'+lines[i].split(';')[1]+'<a></td><td class=table_content><a href=\'https://jugglinglab.org/anim?pattern='+lines[i].split(';')[2]+';colors=mixed\' target="_blank">'+lines[i].split(';')[2]+'<a></td><td class=table_content><a href=\'https://jugglinglab.org/anim?pattern='+lines[i].split(';')[3]+';colors=mixed\' target="_blank">'+lines[i].split(';')[3]+'</a></td></tr>';		
+		    var ssFilenameLowHeight = 'polyrhythms-'+nbobj+'objects_'+ratioR+'!'+ratioL+'_mult2-LowHeight.txt';
+		    oldElem = document.getElementById('TXT2File');
+		    if(oldElem != null)
+		    {
+			document.body.removeChild(oldElem);
+			URL.revokeObjectURL(oldElem.href);
+		    }
+		    oldElem = document.getElementById('TXT2FileBR');
+		    if(oldElem != null)
+		    {
+			document.body.removeChild(oldElem);
+			URL.revokeObjectURL(oldElem.href);
+		    }
+		    var exportSSFileLowHeight = new Blob([ssFileDataLowHeight]);
+		    elem = window.document.createElement('a');
+		    elem.id = 'TXT2File';
+		    newContent = document.createTextNode('Polyrhythms Low Heights');
+		    elem.appendChild(newContent);
+		    elem.href = window.URL.createObjectURL(exportSSFileLowHeight);
+		    elem.download = ssFilenameLowHeight;
+		    currentNode = document.getElementById('TXT2');	  
+		    document.body.insertBefore(elem, currentNode);
+		    elem = window.document.createElement('br');
+		    elem.id = 'TXT2FileBR';
+		    document.body.insertBefore(elem, currentNode);
 
-		    ssFileData = ssFileData + lines[i].split(';')[1] + '\n';
-		    ssFileDataLowHeight = ssFileDataLowHeight + lines[i].split(';')[2] + '\n';
-		    ssFileDataLowHeightJL = ssFileDataLowHeightJL + lines[i].split(';')[3] + '\n';
+		    var ssFilenameLowHeightJL = 'polyrhythms-'+nbobj+'objects_'+ratioR+'!'+ratioL+'_mult2-LowHeightJL.txt';
+		    oldElem = document.getElementById('TXT3File');
+		    if(oldElem != null)
+		    {
+			document.body.removeChild(oldElem);
+			URL.revokeObjectURL(oldElem.href);
+		    }
+		    oldElem = document.getElementById('TXT3FileBR');
+		    if(oldElem != null)
+		    {
+			document.body.removeChild(oldElem);
+			URL.revokeObjectURL(oldElem.href);
+		    }
+		    var exportSSFileLowHeightJL = new Blob([ssFileDataLowHeightJL]);
+		    elem = window.document.createElement('a');
+		    elem.id = 'TXT3File';
+		    newContent = document.createTextNode('Polyrhythms Low Heights For JL');
+		    elem.appendChild(newContent);
+		    elem.href = window.URL.createObjectURL(exportSSFileLowHeightJL);
+		    elem.download = ssFilenameLowHeightJL;
+		    currentNode = document.getElementById('TXT3');	  
+		    document.body.insertBefore(elem, currentNode);
+		    elem = window.document.createElement('br');
+		    elem.id = 'TXT3FileBR';
+		    document.body.insertBefore(elem, currentNode);
 
-		    JMLFileData = JMLFileData + '<line display=\''+lines[i].split(';')[1]+'\' notation="siteswap">\npattern='+lines[i].split(';')[1]+';colors={red}{green}{blue}{yellow}{magenta}{gray}{pink}{black}{cyan}{orange}\n</line>\n';
-		    JMLFileDataLowHeight = JMLFileDataLowHeight + '<line display=\''+lines[i].split(';')[2]+'\' notation="siteswap">\npattern='+lines[i].split(';')[2]+';colors={red}{green}{blue}{yellow}{magenta}{gray}{pink}{black}{cyan}{orange}\n</line>\n';
-		    JMLFileDataLowHeightJL = JMLFileDataLowHeightJL + '<line display=\''+lines[i].split(';')[3]+'\' notation="siteswap">\npattern='+lines[i].split(';')[3]+';colors={red}{green}{blue}{yellow}{magenta}{gray}{pink}{black}{cyan}{orange}\n</line>\n';
+		    var JMLFilename = 'polyrhythms-'+nbobj+'objects_'+ratioR+'!'+ratioL+'_mult2.jml';
+		    oldElem = document.getElementById('JML1File');
+		    if(oldElem != null)
+		    {
+			document.body.removeChild(oldElem);
+			URL.revokeObjectURL(oldElem.href);
+		    }
+		    oldElem = document.getElementById('JML1FileBR');
+		    if(oldElem != null)
+		    {
+			document.body.removeChild(oldElem);
+			URL.revokeObjectURL(oldElem.href);
+		    }
+		    var exportJMLFile = new Blob([JMLFileData]);
+		    elem = window.document.createElement('a');
+		    elem.id = 'JML1File';
+		    newContent = document.createTextNode('Polyrhythms');
+		    elem.appendChild(newContent);
+		    elem.href = window.URL.createObjectURL(exportJMLFile);
+		    elem.download = JMLFilename;
+		    currentNode = document.getElementById('JML1');	  
+		    document.body.insertBefore(elem, currentNode);
+		    elem = window.document.createElement('br');
+		    elem.id = 'JML1FileBR';
+		    document.body.insertBefore(elem, currentNode);
 
-		}
-		
-		output = output + '\n\n</table>\n';
-		ssFileData = ssFileData + '\n   [ => '+cpt+' Siteswap(s) ]\n\n----------- Creation : JugglingTB (Module SSWAP v1.5)';
-		ssFileDataLowHeight = ssFileDataLowHeight + '\n   [ => '+cpt+' Siteswap(s) ]\n\n----------- Creation : JugglingTB (Module SSWAP v1.5)';
-		ssFileDataLowHeightJL = ssFileDataLowHeightJL + '\n   [ => '+cpt+' Siteswap(s) ]\n\n----------- Creation : JugglingTB (Module SSWAP v1.5)';
-		JMLFileData = JMLFileData + '<line display="" />\n<line display="   [ => '+cpt+' Siteswap(s) ]"/>\n<line display="" />\n<line display="----------- Creation : JugglingTB (Module SSWAP v1.5)" />\n</patternlist>\n</jml>';
-		JMLFileDataLowHeight = JMLFileDataLowHeight + '<line display="" />\n<line display="   [ => '+cpt+' Siteswap(s) ]"/>\n<line display="" />\n<line display="----------- Creation : JugglingTB (Module SSWAP v1.5)" />\n</patternlist>\n</jml>';
-		JMLFileDataLowHeightJL = JMLFileDataLowHeightJL + '<line display="" />\n<line display="   [ => '+cpt+' Siteswap(s) ]"/>\n<line display="" />\n<line display="----------- Creation : JugglingTB (Module SSWAP v1.5)" />\n</patternlist>\n</jml>';
+		    var JMLFilenameLowHeight = 'polyrhythms-'+nbobj+'objects_'+ratioR+'!'+ratioL+'_mult2-LowHeight.jml';
+		    oldElem = document.getElementById('JML2File');
+		    if(oldElem != null)
+		    {
+			document.body.removeChild(oldElem);
+			URL.revokeObjectURL(oldElem.href);
+		    }
+		    oldElem = document.getElementById('JML2FileBR');
+		    if(oldElem != null)
+		    {
+			document.body.removeChild(oldElem);
+			URL.revokeObjectURL(oldElem.href);
+		    }
+		    var exportJMLFileLowHeight = new Blob([JMLFileDataLowHeight]);
+		    elem = window.document.createElement('a');
+		    elem.id = 'JML2File';
+		    newContent = document.createTextNode('Polyrhythms Low Heights');
+		    elem.appendChild(newContent);
+		    elem.href = window.URL.createObjectURL(exportJMLFileLowHeight);
+		    elem.download = JMLFilenameLowHeight;
+		    currentNode = document.getElementById('JML2');	  
+		    document.body.insertBefore(elem, currentNode);
+		    elem = window.document.createElement('br');
+		    elem.id = 'JML2FileBR';
+		    document.body.insertBefore(elem, currentNode);
 
-		document.getElementById('insertHere').innerHTML = output;
-		
-		var ssFilename = 'polyrhythms-'+nbobj+'objects_'+ratioR+'!'+ratioL+'_mult2.txt';
-		var oldElem = document.getElementById('TXT1File');
-		if(oldElem != null)
-		{
-		    document.body.removeChild(oldElem);
-		    URL.revokeObjectURL(oldElem.href);
-		}
-		oldElem = document.getElementById('TXT1FileBR');
-		if(oldElem != null)
-		{
-		    document.body.removeChild(oldElem);
-		    URL.revokeObjectURL(oldElem.href);
-		}
-		var exportSSFile = new Blob([ssFileData]);
-		var elem = window.document.createElement('a');
-		elem.id = 'TXT1File';
-		var newContent = document.createTextNode('Polyrhythms');
-		elem.appendChild(newContent);
-		elem.href = window.URL.createObjectURL(exportSSFile);
-		elem.download = ssFilename;
-		var currentNode = document.getElementById('TXT1');	  
-		document.body.insertBefore(elem, currentNode);
-		elem = window.document.createElement('br');
-		elem.id = 'TXT1FileBR';
-		document.body.insertBefore(elem, currentNode);
+		    var JMLFilenameLowHeightJL = 'polyrhythms-'+nbobj+'objects_'+ratioR+'!'+ratioL+'_mult2-LowHeightJL.jml';
+		    oldElem = document.getElementById('JML3File');
+		    if(oldElem != null)
+		    {
+			document.body.removeChild(oldElem);
+			URL.revokeObjectURL(oldElem.href);
+		    }
+		    oldElem = document.getElementById('JML3FileBR');
+		    if(oldElem != null)
+		    {
+			document.body.removeChild(oldElem);
+			URL.revokeObjectURL(oldElem.href);
+		    }
+		    var exportJMLFileLowHeightJL = new Blob([JMLFileDataLowHeightJL]);
+		    elem = window.document.createElement('a');
+		    elem.id = 'JML3File';
+		    newContent = document.createTextNode('Polyrhythms Low Heights For JL');
+		    elem.appendChild(newContent);
+		    elem.href = window.URL.createObjectURL(exportJMLFileLowHeightJL);
+		    elem.download = JMLFilenameLowHeightJL;
+		    currentNode = document.getElementById('JML3');	  
+		    document.body.insertBefore(elem, currentNode);
+		    elem = window.document.createElement('br');
+		    elem.id = 'JML3FileBR';
+		    document.body.insertBefore(elem, currentNode);
 
-		var ssFilenameLowHeight = 'polyrhythms-'+nbobj+'objects_'+ratioR+'!'+ratioL+'_mult2-LowHeight.txt';
-		oldElem = document.getElementById('TXT2File');
-		if(oldElem != null)
-		{
-		    document.body.removeChild(oldElem);
-		    URL.revokeObjectURL(oldElem.href);
-		}
-		oldElem = document.getElementById('TXT2FileBR');
-		if(oldElem != null)
-		{
-		    document.body.removeChild(oldElem);
-		    URL.revokeObjectURL(oldElem.href);
-		}
-		var exportSSFileLowHeight = new Blob([ssFileDataLowHeight]);
-		elem = window.document.createElement('a');
-		elem.id = 'TXT2File';
-		newContent = document.createTextNode('Polyrhythms Low Heights');
-		elem.appendChild(newContent);
-		elem.href = window.URL.createObjectURL(exportSSFileLowHeight);
-		elem.download = ssFilenameLowHeight;
-		currentNode = document.getElementById('TXT2');	  
-		document.body.insertBefore(elem, currentNode);
-		elem = window.document.createElement('br');
-		elem.id = 'TXT2FileBR';
-		document.body.insertBefore(elem, currentNode);
-
-		var ssFilenameLowHeightJL = 'polyrhythms-'+nbobj+'objects_'+ratioR+'!'+ratioL+'_mult2-LowHeightJL.txt';
-		oldElem = document.getElementById('TXT3File');
-		if(oldElem != null)
-		{
-		    document.body.removeChild(oldElem);
-		    URL.revokeObjectURL(oldElem.href);
-		}
-		oldElem = document.getElementById('TXT3FileBR');
-		if(oldElem != null)
-		{
-		    document.body.removeChild(oldElem);
-		    URL.revokeObjectURL(oldElem.href);
-		}
-		var exportSSFileLowHeightJL = new Blob([ssFileDataLowHeightJL]);
-		elem = window.document.createElement('a');
-		elem.id = 'TXT3File';
-		newContent = document.createTextNode('Polyrhythms Low Heights For JL');
-		elem.appendChild(newContent);
-		elem.href = window.URL.createObjectURL(exportSSFileLowHeightJL);
-		elem.download = ssFilenameLowHeightJL;
-		currentNode = document.getElementById('TXT3');	  
-		document.body.insertBefore(elem, currentNode);
-		elem = window.document.createElement('br');
-		elem.id = 'TXT3FileBR';
-		document.body.insertBefore(elem, currentNode);
-
-		var JMLFilename = 'polyrhythms-'+nbobj+'objects_'+ratioR+'!'+ratioL+'_mult2.jml';
-		oldElem = document.getElementById('JML1File');
-		if(oldElem != null)
-		{
-		    document.body.removeChild(oldElem);
-		    URL.revokeObjectURL(oldElem.href);
-		}
-		oldElem = document.getElementById('JML1FileBR');
-		if(oldElem != null)
-		{
-		    document.body.removeChild(oldElem);
-		    URL.revokeObjectURL(oldElem.href);
-		}
-		var exportJMLFile = new Blob([JMLFileData]);
-		elem = window.document.createElement('a');
-		elem.id = 'JML1File';
-		newContent = document.createTextNode('Polyrhythms');
-		elem.appendChild(newContent);
-		elem.href = window.URL.createObjectURL(exportJMLFile);
-		elem.download = JMLFilename;
-		currentNode = document.getElementById('JML1');	  
-		document.body.insertBefore(elem, currentNode);
-		elem = window.document.createElement('br');
-		elem.id = 'JML1FileBR';
-		document.body.insertBefore(elem, currentNode);
-
-		var JMLFilenameLowHeight = 'polyrhythms-'+nbobj+'objects_'+ratioR+'!'+ratioL+'_mult2-LowHeight.jml';
-		oldElem = document.getElementById('JML2File');
-		if(oldElem != null)
-		{
-		    document.body.removeChild(oldElem);
-		    URL.revokeObjectURL(oldElem.href);
-		}
-		oldElem = document.getElementById('JML2FileBR');
-		if(oldElem != null)
-		{
-		    document.body.removeChild(oldElem);
-		    URL.revokeObjectURL(oldElem.href);
-		}
-		var exportJMLFileLowHeight = new Blob([JMLFileDataLowHeight]);
-		elem = window.document.createElement('a');
-		elem.id = 'JML2File';
-		newContent = document.createTextNode('Polyrhythms Low Heights');
-		elem.appendChild(newContent);
-		elem.href = window.URL.createObjectURL(exportJMLFileLowHeight);
-		elem.download = JMLFilenameLowHeight;
-		currentNode = document.getElementById('JML2');	  
-		document.body.insertBefore(elem, currentNode);
-		elem = window.document.createElement('br');
-		elem.id = 'JML2FileBR';
-		document.body.insertBefore(elem, currentNode);
-
-		var JMLFilenameLowHeightJL = 'polyrhythms-'+nbobj+'objects_'+ratioR+'!'+ratioL+'_mult2-LowHeightJL.jml';
-		oldElem = document.getElementById('JML3File');
-		if(oldElem != null)
-		{
-		    document.body.removeChild(oldElem);
-		    URL.revokeObjectURL(oldElem.href);
-		}
-		oldElem = document.getElementById('JML3FileBR');
-		if(oldElem != null)
-		{
-		    document.body.removeChild(oldElem);
-		    URL.revokeObjectURL(oldElem.href);
-		}
-		var exportJMLFileLowHeightJL = new Blob([JMLFileDataLowHeightJL]);
-		elem = window.document.createElement('a');
-		elem.id = 'JML3File';
-		newContent = document.createTextNode('Polyrhythms Low Heights For JL');
-		elem.appendChild(newContent);
-		elem.href = window.URL.createObjectURL(exportJMLFileLowHeightJL);
-		elem.download = JMLFilenameLowHeightJL;
-		currentNode = document.getElementById('JML3');	  
-		document.body.insertBefore(elem, currentNode);
-		elem = window.document.createElement('br');
-		elem.id = 'JML3FileBR';
-		document.body.insertBefore(elem, currentNode);
-		
+		})
 	    }
 
 	    else if(xhr.status == 404)
@@ -625,8 +634,7 @@
 	    }
 	}
 
-
-	xhr.open('GET', URLHOST+file, true);
+	xhr.open('GET', URLHOST+'db_duplex/'+file+'.txt.zip', true);
 	xhr.send();
     }
     
@@ -663,8 +671,8 @@
 	    return;
 	}
 
-	var fileIn = 'polyrythms-'+nbobj+'objects_mult2_'+ratioR+'!'+ratioL+'.txt';
-	readAndParseDBfile('db_duplex/'+fileIn);	
+	var fileIn = 'polyrythms-'+nbobj+'objects_mult2_'+ratioR+'!'+ratioL;
+	readAndParseDBfile(fileIn);	
     }
 
 
