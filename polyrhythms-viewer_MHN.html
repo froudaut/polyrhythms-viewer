@@ -54,7 +54,7 @@
     var MAXRATIOR = 5;
     var MAXRATIOL = 5;
     var URLHOST = './';   
-    var NBHANDS = 4;    
+    var NBHANDS = 4;
   </script>
 
   <script src="lib/jszip/dist/jszip.js"></script>
@@ -135,7 +135,7 @@
 	</td>
       </tr>
     </table>
-    <button onclick="run()">Check</button>
+    <button id="check" onclick="run()" style="background:green;color:white;">Check</button>           
     <br/><br/>
   </p>
   
@@ -559,6 +559,10 @@
 		    elem = window.document.createElement('br');
 		    elem.id = 'JML3FileBR';
 		    document.body.insertBefore(elem, currentNode);
+		
+		    var check = document.getElementById('check');    
+		    check.style.backgroundColor = 'green';
+		    check.style.color = 'white';
 		})
 	    }
 
@@ -567,17 +571,22 @@
 	    {
 		var output = '\n\n<p><span style="color:red">Corresponding Entry is not available in DB</span></p>';
 		document.getElementById('insertHere').innerHTML = output;
+
+		var check = document.getElementById('check');    
+		check.style.backgroundColor = 'green';
+		check.style.color = 'white';
 	    }
 	    
 	    else 
 	    {
-		document.getElementById('insertHere').innerHTML = '';
+		document.getElementById('insertHere').innerHTML = '';	
 	    }
-	}
 
+	}
 
 	xhr.open('GET', URLHOST+'db_MHN/'+file+'.txt.zip', true);
 	xhr.send();
+
     }
 
 
@@ -594,15 +603,25 @@
 	var ratioH3 = document.getElementById("ratioH3").value;
 	var nbobj = document.getElementById("nbobj").value;
 
+	var check = document.getElementById('check');        
+	check.style.backgroundColor = 'red';
+	check.style.color = 'white';
+	
 	// Check Parameters
 	if(parseInt(maxHeight,16) > MAXHEIGHT){
 	    var output = '\n\n<p><span style="color:red">Max Height is invalid (\<'+MAXHEIGHT+') </span></p>';
 	    document.getElementById('insertHere').innerHTML = output;
+	    var check = document.getElementById('check');    
+	    check.style.backgroundColor = 'green';
+	    check.style.color = 'white';
 	    return;
 	}
 	if(parseInt(minHeight,16) < MINHEIGHT){
 	    var output = '\n\n<p><span style="color:red">Min Height is invalid (\<'+MINHEIGHT+') </span></p>';
 	    document.getElementById('insertHere').innerHTML = output;
+	    var check = document.getElementById('check');    
+	    check.style.backgroundColor = 'green';
+	    check.style.color = 'white';
 	    return;
 	}
 	//	if(ratioR < MINRATIOR || ratioR > MAXRATIOR){
